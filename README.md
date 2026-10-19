@@ -74,6 +74,10 @@ The API test creates its own users and campaigns, so point it at a database you 
 
 Edit `lib/api-spec/openapi.yaml`, then run `pnpm --filter @workspace/api-spec run codegen`. Never edit the generated folders by hand.
 
+## Design
+
+The visual language is ported from the MuhAI project: a tinted `#ebeff5` ground under white cards, `#242426` ink, `#35363b` for actions and lime `#d9ff5c` for whatever is live, Inter Tight type and 8 to 24px radii. `src/styles/landing.css` holds the marketing page, auth screen and their primitives (`src/components/lp.tsx`); `src/index.css` holds the tokens and the signed-in console skin, including a dark variant.
+
 ## Translations
 
 UI strings are written in Russian in the code and looked up in `src/lib/locales/*.ts`, which hold the English and Azerbaijani text. English is the default for new visitors. The i18n test fails if any Russian string in the app, the API error messages or the demo seed has no translation.

@@ -185,7 +185,7 @@ function Participation({ c }: { c: Campaign }) {
             <li className="flex gap-3"><span className="num muted">3</span><span>{t('Отправьте отчёт до {date}. Осталось {left}.', { date: fmtDateTime(app.deadline), left: timeLeft(app.deadline) ?? '' })}</span></li>
           </ol>
           {app.method === 'webhook' && (
-            <div className="border border-border px-4 py-3 t-small" style={verifyWait ? undefined : { borderColor: 'hsl(var(--live))' }}>
+            <div className={`px-4 py-3 t-small rounded-[12px] ${verifyWait ? 'bg-[var(--pg)]' : 'bg-[var(--ok-bg)] text-[var(--ok)]'}`}>
               {verifyWait ? t('Ждём подтверждения от продукта. Оно приходит само, когда вы выполните целевое действие.') : t('Продукт подтвердил выполнение {date}.', { date: fmtDateTime(app.verifiedAt) })}
             </div>
           )}

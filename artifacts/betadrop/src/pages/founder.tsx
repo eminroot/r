@@ -82,7 +82,7 @@ export function FounderCampaigns() {
       {list.error && <ErrorBox error={list.error} retry={() => list.refetch()} />}
       {list.data && own.length === 0 && <Empty title="Кампаний пока нет" hint="Опишите продукт, задайте до трёх вопросов тестерам и загрузите коды наград. Это займёт минут десять." action={<Link href="/app/founder/campaigns/new" className="btn btn-primary btn-sm">{t('Создать кампанию')}</Link>} />}
       {own.length > 0 && (
-        <div className="border border-border overflow-x-auto">
+        <div className="tbl-card">
           <table className="tbl min-w-[820px]">
             <thead><tr><th>{t('Кампания')}</th><th>{t('Статус')}</th><th>{t('Проверка')}</th><th>{t('Места')}</th><th>{t('Создана')}</th><th /></tr></thead>
             <tbody>
@@ -208,9 +208,9 @@ export function NewCampaign() {
 
           <section className="flex flex-col gap-4">
             <h2 className="t-h3">{t('Проверка и награда')}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border border border-border" role="radiogroup" aria-label={t('Способ проверки')}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" aria-label={t('Способ проверки')}>
               {METHODS.map((m) => (
-                <button type="button" role="radio" aria-checked={f.method === m} key={m} onClick={() => set('method', m)} className={`p-3 text-left transition-colors ${f.method === m ? 'bg-foreground text-background' : 'bg-surface hover:bg-muted'}`} data-testid={`button-method-${m}`}>
+                <button type="button" role="radio" aria-checked={f.method === m} key={m} onClick={() => set('method', m)} className={`p-3.5 text-left rounded-[12px] border transition-colors ${f.method === m ? 'bg-[var(--act)] text-[var(--on-act)] border-[var(--act)]' : 'bg-[var(--card)] border-[var(--ink-12)] hover:border-[var(--ink-25)]'}`} data-testid={`button-method-${m}`}>
                   <div className="t-small font-medium">{methodLabel(m)}</div>
                   <div className={`mono text-[11px] mt-0.5 ${f.method === m ? 'opacity-70' : 'muted'}`}>{m}</div>
                 </button>
@@ -317,14 +317,14 @@ export function FounderSubmissions() {
         </>}
       />
       <div className="flex flex-wrap gap-3 justify-between mb-5">
-        <div className="seg" role="tablist">
+        <div className="seg !bg-[var(--card)] border border-[var(--ink-07)]" role="tablist">
           {([['apps', 'Заявки', pa], ['reports', 'Отчёты', ps]] as const).map(([k, l, n]) => (
             <button key={k} role="tab" aria-selected={tab === k} data-active={tab === k} onClick={() => setTab(k)} data-testid={`tab-${k}`}>
-              {t(l)} {n > 0 && <span className="num text-[11px] px-1 bg-streak text-white">{n}</span>}
+              {t(l)} {n > 0 && <span className="num text-[11px] min-w-[18px] h-[18px] px-1.5 grid place-items-center rounded-full bg-[var(--act)] text-[var(--on-act)]">{n}</span>}
             </button>
           ))}
         </div>
-        <div className="seg">
+        <div className="seg !bg-[var(--card)] border border-[var(--ink-07)]">
           {(['pending', 'all'] as const).map((k) => <button key={k} data-active={filter === k} onClick={() => setFilter(k)} data-testid={`filter-${k}`}>{t(k === 'pending' ? 'Ждут решения' : 'Все')}</button>)}
         </div>
       </div>
@@ -386,7 +386,7 @@ export function FounderSubmissions() {
                 <article key={s.id} className="p-5" data-testid={`row-founder-submission-${s.id}`}>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span className="t-h3">{s.title}</span>
-                    <span className="tag" style={s.severity === 'critical' || s.severity === 'high' ? { color: 'hsl(var(--destructive))', borderColor: 'currentColor' } : undefined}>{severityLabel(s.severity)}</span>
+                    <span className={`tag ${s.severity === 'critical' ? 'tag-stop' : s.severity === 'high' ? 'tag-warn' : ''}`}>{severityLabel(s.severity)}</span>
                     <Status s={s.status} kind="report" />
                   </div>
                   <div className="meta mt-1"><Link href={`/app/tester/profile/${s.username}`} className="hover:underline">@{s.username}</Link> · {s.campaignTitle} · {fmtDateTime(s.createdAt)}</div>

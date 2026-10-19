@@ -22,7 +22,7 @@ function body(s: Submission) {
     `Tester: @${s.username}`,
     s.mediaUrl && `Recording: ${s.mediaUrl}`,
     s.accountEmail && `Account email: ${s.accountEmail}`,
-    `BETADROP report #${s.id}, ${s.createdAt.slice(0, 10)}`,
+    `Betadrop report #${s.id}, ${s.createdAt.slice(0, 10)}`,
   ].filter(Boolean);
   return `${s.content}\n\n${meta.join('\n')}`;
 }

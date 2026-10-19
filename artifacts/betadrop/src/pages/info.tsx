@@ -83,7 +83,7 @@ function ApiKeys() {
       {keys.error && <ErrorBox error={keys.error} retry={() => keys.refetch()} />}
       {keys.data && keys.data.length === 0 && <p className="t-small muted">{t('Активных ключей нет.')}</p>}
       {keys.data && keys.data.length > 0 && (
-        <div className="border border-border overflow-x-auto">
+        <div className="tbl-card">
           <table className="tbl min-w-[520px]">
             <thead><tr><th>{t('Название')}</th><th>{t('Ключ')}</th><th>{t('Создан')}</th><th>{t('Последний вызов')}</th><th /></tr></thead>
             <tbody>
@@ -207,7 +207,7 @@ function Exports() {
 export function Integrations() {
   return (
     <Page>
-      <PageHead title="Интеграции" sub="Подключите BETADROP к своему бэкенду и трекеру задач." right={<Link href="/docs#api" className="btn">API</Link>} />
+      <PageHead title="Интеграции" sub="Подключите Betadrop к своему бэкенду и трекеру задач." right={<Link href="/docs#api" className="btn">API</Link>} />
       <ApiKeys />
       <Webhook />
       <Exports />
@@ -305,7 +305,7 @@ export function Docs() {
             <p>{t('Бейджи: FIRST_DROP за первый принятый отчёт, BUG_HUNTER_L1/L2/L3 за 5/25/100 принятых отчётов, DEEP_AUDITOR за 10 отчётов с записью экрана, STREAK_30 и STREAK_100 за серию.')}</p>
           </DocSection>
           <DocSection id="methods" title="Способы проверки">
-            <div className="border border-border overflow-x-auto">
+            <div className="tbl-card">
               <table className="tbl min-w-[520px]">
                 <thead><tr><th>{t('Метод')}</th><th>{t('Что присылает тестер')}</th><th>{t('Подключение')}</th></tr></thead>
                 <tbody>

@@ -75,7 +75,7 @@ export function TesterDashboard() {
         {apps.data && apps.data.length === 0 && <Empty title="Заявок пока нет" hint="Выберите тест в каталоге и ответьте на вопросы фаундера." action={<Link href="/app/explore" className="btn btn-sm">{t('Открыть каталог')}</Link>} />}
         {apps.data && apps.data.length > 0 && rest.length === 0 && <p className="t-small muted">{t('Все текущие заявки в работе.')}</p>}
         {rest.length > 0 && (
-          <div className="border border-border overflow-x-auto">
+          <div className="tbl-card">
             <table className="tbl min-w-[620px]">
               <thead><tr><th>{t('Тест')}</th><th>{t('Статус')}</th><th>{t('Награда')}</th><th className="r">{t('Подана')}</th></tr></thead>
               <tbody>
@@ -99,7 +99,7 @@ export function TesterDashboard() {
         {subs.error && <ErrorBox error={subs.error} retry={() => subs.refetch()} />}
         {subs.data && subs.data.length === 0 && <Empty title="Отчётов пока нет" hint="Когда заявку одобрят, отчёт отправляется со страницы теста." />}
         {subs.data && subs.data.length > 0 && (
-          <div className="border border-border overflow-x-auto">
+          <div className="tbl-card">
             <table className="tbl min-w-[620px]">
               <thead><tr><th>{t('Отчёт')}</th><th>{t('Серьёзность')}</th><th>{t('Статус')}</th><th className="r">{t('Отправлен')}</th></tr></thead>
               <tbody>
@@ -158,7 +158,7 @@ export function Vault() {
               <div className="min-w-0">
                 <div className="font-medium">{r.title}</div>
                 <div className="meta">{r.campaignTitle} · {fmtDate(r.createdAt)}</div>
-                {r.claimed && r.code && <div className="mono text-[13px] mt-2 px-2.5 py-1.5 border border-dashed border-border bg-background break-all select-all" data-testid={`text-code-${r.id}`}>{r.code}</div>}
+                {r.claimed && r.code && <div className="mono text-[13px] mt-2 px-3 py-2 rounded-[10px] bg-[var(--pg)] break-all select-all" data-testid={`text-code-${r.id}`}>{r.code}</div>}
               </div>
               <div className="flex gap-2">
                 {r.claimed && r.code ? (
@@ -207,16 +207,16 @@ function Heatmap({ data }: { data: Contribution[] }) {
     }
     return { weeks, total };
   }, [data]);
-  const lvl = (n: number) => (n === 0 ? 'hsl(var(--muted))' : n === 1 ? 'hsl(var(--live) / 0.4)' : n <= 3 ? 'hsl(var(--live) / 0.7)' : 'hsl(var(--live))');
+  const lvl = (n: number) => (n === 0 ? 'var(--ink-07)' : n === 1 ? 'hsl(var(--live) / 0.4)' : n <= 3 ? 'hsl(var(--live) / 0.7)' : 'hsl(var(--live))');
   const label = (d: string) => fmtDate(`${d}T12:00:00Z`, true);
   return (
     <div>
       <div className="overflow-x-auto pb-1">
-        <div className="flex gap-[3px] w-max" data-testid="grid-contributions" role="img" aria-label={t('{count} действий за год', { count: total })}>
+        <div className="flex gap-[3px] min-w-[620px]" data-testid="grid-contributions" role="img" aria-label={t('{count} действий за год', { count: total })}>
           {weeks.map((col, i) => (
-            <div key={i} className="flex flex-col gap-[3px]">
+            <div key={i} className="flex flex-col gap-[3px] flex-1">
               {col.map((c) => (
-                <span key={c.d} title={t('{date}: {count}', { date: label(c.d), count: c.n })} className="w-[11px] h-[11px]" style={{ background: c.future ? 'transparent' : lvl(c.n) }} />
+                <span key={c.d} title={t('{date}: {count}', { date: label(c.d), count: c.n })} className="w-full aspect-square rounded-[3px]" style={{ background: c.future ? 'transparent' : lvl(c.n) }} />
               ))}
             </div>
           ))}
@@ -224,7 +224,7 @@ function Heatmap({ data }: { data: Contribution[] }) {
       </div>
       <div className="flex flex-wrap gap-3 justify-between items-center mt-3 meta">
         <span>{t('{count} действий за год', { count: total })}</span>
-        <span className="flex items-center gap-1">{t('меньше')} {[0, 1, 2, 4].map((n) => <span key={n} className="w-[11px] h-[11px]" style={{ background: lvl(n) }} />)} {t('больше')}</span>
+        <span className="flex items-center gap-1">{t('меньше')} {[0, 1, 2, 4].map((n) => <span key={n} className="w-[11px] h-[11px] rounded-[3px]" style={{ background: lvl(n) }} />)} {t('больше')}</span>
       </div>
     </div>
   );
@@ -251,7 +251,7 @@ function Badges({ p }: { p: PublicProfile }) {
         const ok = earned(b);
         return (
           <li key={b.id} className="px-4 py-2.5 flex items-center gap-3" data-testid={`badge-${b.id}`}>
-            <span className="mono text-[12px] w-[150px] shrink-0" style={{ color: ok ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.7)' }}>[{b.id}]</span>
+            <span className={`tag ${ok ? 'tag-lime' : ''} mono !text-[11px] w-[150px] shrink-0 justify-center`}>{b.id}</span>
             <span className={`t-small flex-1 ${ok ? '' : 'muted'}`}>{t(b.label)}</span>
             <span className="num text-[12px] muted">{ok ? t('получен') : `${Math.min(value[b.metric], b.goal)} / ${b.goal}`}</span>
           </li>
@@ -312,8 +312,8 @@ function ProfileView({ p, own }: { p: PublicProfile; own?: Profile }) {
     <div className="flex flex-col gap-10">
       <header className="flex flex-col md:flex-row gap-5 md:items-end justify-between">
         <div className="min-w-0">
-          <h1 className="t-h1 mono break-all" data-testid="text-username">@{p.username}</h1>
-          <p className="t-body muted mt-1">{[p.os, p.createdAt && t('на BETADROP с {date}', { date: fmtDate(p.createdAt) })].filter(Boolean).join(' · ')}</p>
+          <h1 className="t-h1 break-all" data-testid="text-username">@{p.username}</h1>
+          <p className="t-body muted mt-1">{[p.os, p.createdAt && t('на Betadrop с {date}', { date: fmtDate(p.createdAt) })].filter(Boolean).join(' · ')}</p>
         </div>
         {own && !edit && <button className="btn" onClick={() => setEdit(true)} data-testid="button-edit-profile"><Pencil className="w-3.5 h-3.5" /> {t('Редактировать')}</button>}
       </header>

@@ -46,11 +46,12 @@ Landing, catalog, pricing, docs; Clerk accounts; campaigns with screening, Trust
 
 ## User preferences
 
-- Follow the provided BETADROP specification: dense utility UI, square corners, no shadows or gradients, 1px borders.
-- Light palette: background #F6F8FA, surface #FFFFFF, border #D0D7DE, text #1F2328, secondary #656D76, accent #548EAA.
-- Dark palette: background #0D1117, surface #161B22, border #30363D, text #E6EDF3, secondary #8B949E, accent #58A6FF.
-- Sans-serif body text and monospaced metadata. Preserve the Tester/Founder role switcher.
-- English is the default interface language; also support Russian and Azerbaijani (Latin script). Preserve the user's selected language across visits.
+- Design language comes from the user's earlier MuhAI project (ported in `artifacts/betadrop/src/styles/landing.css`, `src/components/lp.tsx` and the token block in `src/index.css`). It replaces the spec's original square-corner, no-shadow look.
+- Ground #ebeff5 under white cards, ink #242426 at 75/50/25/12/7% opacity, #35363b for anything that acts, lime #d9ff5c for whatever is live (current rail tile, selected segment, chip inside the main button). Radii 8 / 12 / 16 / 20 / 24, one hairline instead of shadows except on floating things.
+- Type: Inter Tight everywhere, tracking tightens as size grows; Syne for the "Betadrop" wordmark; IBM Plex Mono only for codes, keys and logs.
+- Landing and auth screens stay light. The signed-in console (icon rail + top bar) also has a dark variant of the same tokens.
+- Keep the Tester/Founder role switcher. English is the default; also Russian and Azerbaijani (Latin). Preserve the selected language across visits.
+- Copy: short plain sentences, no em dashes, no "--", no filler words. The i18n test enforces the punctuation.
 
 ## Gotchas
 

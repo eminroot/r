@@ -139,7 +139,7 @@ export const workspaceMessages: Record<string, readonly [string, string]> = {
   "ОС и железо": ["OS and hardware", "ƏS və avadanlıq"],
   "через запятую": ["comma separated", "vergüllə"],
   "О себе": ["About", "Haqqında"],
-  "на BETADROP с {date}": ["on BETADROP since {date}", "{date} tarixindən BETADROP-da"],
+  "на Betadrop с {date}": ["on Betadrop since {date}", "{date} tarixindən Betadrop-da"],
   "Редактировать": ["Edit", "Redaktə et"],
   "из 100": ["out of 100", "100-dən"],
   "лучшая: {count}": ["best: {count}", "ən yaxşı: {count}"],

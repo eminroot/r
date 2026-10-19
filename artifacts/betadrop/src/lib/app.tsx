@@ -170,3 +170,5 @@ export const severityLabel = (s: string) => t(severityLabels[s] ?? s);
 export const SEVERITIES = ['low', 'medium', 'high', 'critical'] as const;
 
 export const CATEGORIES = ['DevTools', 'AI / ML', 'Web3', 'FinTech', 'Mobile'] as const;
+
+export const REPO_URL = 'https://github.com/eminroot/r';

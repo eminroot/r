@@ -3,13 +3,15 @@ import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { AppStateProvider } from '@/lib/app';
-import { Logo, Private } from '@/components/shell';
+import { Private } from '@/components/shell';
+import { Btn, LangPills } from '@/components/lp';
+import { Check } from 'lucide-react';
 import Landing from '@/pages/landing';
 import Explore from '@/pages/explore';
 import CampaignPage from '@/pages/campaign';
@@ -18,7 +20,6 @@ import { TesterDashboard, Vault, ProfilePage } from '@/pages/tester';
 import { FounderCampaigns, NewCampaign, FounderSubmissions } from '@/pages/founder';
 import { Integrations, Docs } from '@/pages/info';
 import { useLocale } from '@/lib/i18n';
-import { LanguageSwitcher } from '@/components/language-switcher';
 import { clerkLocales } from '@/lib/clerk-localization';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
@@ -46,76 +47,90 @@ const clerkAppearance = {
   theme: shadcn,
   cssLayerName: 'clerk',
   options: {
-    logoPlacement: 'inside' as const,
-    logoLinkUrl: basePath || '/',
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
+    logoPlacement: 'none' as const,
   },
   variables: {
-    colorPrimary: 'hsl(var(--primary))',
-    colorForeground: 'hsl(var(--foreground))',
-    colorMutedForeground: 'hsl(var(--muted-foreground))',
-    colorDanger: 'hsl(var(--destructive))',
-    colorBackground: 'hsl(var(--surface))',
-    colorInput: 'hsl(var(--surface))',
-    colorInputForeground: 'hsl(var(--foreground))',
-    colorNeutral: 'hsl(var(--foreground))',
-    fontFamily: "'Inter', 'Helvetica Neue', Helvetica, sans-serif",
-    borderRadius: '0px',
+    colorPrimary: '#35363b',
+    colorForeground: '#242426',
+    colorMutedForeground: 'rgba(36, 36, 38, 0.75)',
+    colorDanger: '#a4433a',
+    colorBackground: '#ffffff',
+    colorInput: '#ffffff',
+    colorInputForeground: '#242426',
+    colorNeutral: '#242426',
+    fontFamily: "'Inter Tight', 'Inter', system-ui, sans-serif",
+    borderRadius: '12px',
   },
   elements: {
-    rootBox: 'w-full flex justify-center',
-    cardBox: 'bg-surface border border-border !rounded-none w-[420px] max-w-full overflow-hidden',
-    card: '!shadow-none !border-0 !bg-transparent !rounded-none',
-    footer: '!shadow-none !border-0 !bg-transparent !rounded-none border-t border-border',
-    headerTitle: 'text-foreground text-lg font-semibold tracking-tight',
-    headerSubtitle: 'text-muted-foreground text-sm',
-    socialButtonsBlockButtonText: 'text-foreground text-sm font-medium',
-    formFieldLabel: 'text-foreground text-xs font-medium',
-    footerActionLink: 'text-primary font-medium',
-    footerActionText: 'text-muted-foreground',
-    dividerText: 'text-muted-foreground font-mono text-[11px]',
-    identityPreviewEditButton: 'text-primary',
-    formFieldSuccessText: 'text-live',
-    alertText: 'text-foreground',
-    logoBox: 'h-9 justify-start',
-    logoImage: 'h-9 w-9',
-    socialButtonsBlockButton: '!rounded-none border border-border bg-surface',
-    formButtonPrimary: '!rounded-none bg-primary text-primary-foreground !shadow-none',
-    formFieldInput: '!rounded-none border border-input bg-surface text-foreground',
-    footerAction: 'bg-background',
-    dividerLine: 'bg-border',
-    alert: '!rounded-none border border-destructive/40',
-    otpCodeFieldInput: '!rounded-none border border-input',
-    formFieldRow: 'gap-3',
-    main: 'gap-5',
+    rootBox: 'w-full',
+    cardBox: '!shadow-none !border-0 !bg-transparent w-full max-w-[420px] mx-auto',
+    card: '!shadow-none !border-0 !bg-transparent !p-0',
+    footer: '!shadow-none !border-0 !bg-transparent',
+    header: 'items-start text-left',
+    headerTitle: '!text-[30px] !font-normal !tracking-[-0.03em] text-[#242426]',
+    headerSubtitle: '!text-[15px] text-[rgba(36,36,38,0.75)]',
+    socialButtonsBlockButton: '!rounded-[12px] !border !border-[rgba(36,36,38,0.12)] !bg-white !shadow-none h-11',
+    socialButtonsBlockButtonText: 'text-[#242426] text-sm',
+    formFieldLabel: 'text-[13px] !font-normal text-[rgba(36,36,38,0.75)]',
+    formFieldInput: '!rounded-[12px] !border !border-[rgba(36,36,38,0.12)] !bg-white !shadow-none h-11 text-[#242426]',
+    formButtonPrimary: '!rounded-[12px] !bg-[#35363b] hover:!bg-[#242426] !shadow-none h-11 !text-[14px] !font-normal',
+    footerActionLink: '!text-[#242426] underline underline-offset-4',
+    footerActionText: 'text-[rgba(36,36,38,0.75)]',
+    dividerText: 'text-[rgba(36,36,38,0.5)] text-[12px]',
+    dividerLine: 'bg-[rgba(36,36,38,0.07)]',
+    identityPreviewEditButton: 'text-[#242426]',
+    otpCodeFieldInput: '!rounded-[10px] !border !border-[rgba(36,36,38,0.12)]',
+    alert: '!rounded-[12px] !border-0 !bg-[rgba(190,70,60,0.13)]',
+    alertText: 'text-[#a4433a]',
   },
 };
 
-function AuthFrame({ children }: { children: ReactNode }) {
+const PITCH: [string, string][] = [
+  ['Каталог закрытых бет', 'DevTools, AI, Web3, FinTech и мобильные приложения'],
+  ['Четыре способа проверки', 'Код, email, запись экрана или webhook'],
+  ['Награды кодами', 'Лицензии и API-кредиты за принятые отчёты'],
+  ['Один аккаунт', 'Роль тестера или фаундера переключается в шапке'],
+];
+
+function AuthFrame({ children, alt }: { children: ReactNode; alt: { to: string; quiet: string; cta: string } }) {
   const { t } = useLocale();
   return (
-    <div className="relative min-h-[100dvh] grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] bg-background">
-      <div className="absolute top-3 right-4 z-10"><LanguageSwitcher /></div>
-      <div className="hidden lg:flex flex-col justify-between border-r border-border p-10">
-        <Logo />
-        <div className="max-w-md">
-          <h1 className="t-h1">{t('Инженерный фидбек для софта.')}</h1>
-          <ul className="mt-6 flex flex-col gap-3 t-body muted">
-            <li>{t('Тестеры получают лицензии и API-кредиты за принятые отчёты.')}</li>
-            <li>{t('Фаундеры получают воспроизводимые баг-репорты и разборы онбординга.')}</li>
-            <li>{t('Один аккаунт: роль переключается в шапке.')}</li>
-          </ul>
-        </div>
-        <span className="meta">BETADROP</span>
+    <div className="lp lp-auth">
+      <div className="lp-auth__nav">
+        <nav className="lp-nav">
+          <Link className="lp-nav__brand" href="/">Betadrop</Link>
+          <span className="lp-auth__gap" />
+          <div className="lp-nav__right">
+            <LangPills />
+            <Link className="lp-nav__login" href={alt.to}>{t(alt.quiet)}</Link>
+            <Btn to={alt.to} label={t(alt.cta)} size="sm" />
+          </div>
+        </nav>
       </div>
-      <div className="min-w-0 flex items-center justify-center px-4 py-20">{children}</div>
+      <div className="lp-auth__body">
+        <div className="lp-auth__card">
+          <aside className="lp-auth__pitch">
+            <h2 className="lp-d5">{t('Инженерный фидбек для софта. Награды за принятые отчёты.')}</h2>
+            <ul className="lp-auth__list">
+              {PITCH.map(([b, s]) => (
+                <li key={b}>
+                  <span className="lp-auth__mark"><Check strokeWidth={2.2} /></span>
+                  <span><b>{t(b)}</b><span>{t(s)}</span></span>
+                </li>
+              ))}
+            </ul>
+            <p className="lp-auth__foot">Betadrop</p>
+          </aside>
+          <div className="lp-auth__form">{children}</div>
+        </div>
+      </div>
     </div>
   );
 }
 
 function SignInPage() {
   return (
-    <AuthFrame>
+    <AuthFrame alt={{ to: '/sign-up', quiet: 'Нет аккаунта?', cta: 'Регистрация' }}>
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
     </AuthFrame>
   );
@@ -123,7 +138,7 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <AuthFrame>
+    <AuthFrame alt={{ to: '/sign-in', quiet: 'Уже есть аккаунт?', cta: 'Войти' }}>
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
     </AuthFrame>
   );
@@ -191,7 +206,7 @@ function Routes() {
       : path.startsWith('/app/campaigns/') ? 'Тест'
       : path.includes('/dashboard') ? 'Мои тесты'
       : path.includes('/explore') ? 'Каталог тестов' : 'Инженерный фидбек для софта.';
-    const title = `${t(section)} | BETADROP`;
+    const title = `${t(section)} | Betadrop`;
     const description = t('Бета-тесты для софта: баг-репорты от технических тестеров, награды за принятые отчёты.');
     document.title = title;
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
@@ -238,8 +253,8 @@ function ClerkProviderWithRoutes() {
       signUpUrl={`${basePath}/sign-up`}
       localization={{
         ...authLocale,
-        signIn: { ...authLocale.signIn, start: { ...authLocale.signIn?.start, title: t('Вход в BETADROP'), subtitle: t('С возвращением') } },
-        signUp: { ...authLocale.signUp, start: { ...authLocale.signUp?.start, title: t('Регистрация в BETADROP'), subtitle: t('Один аккаунт для тестера и фаундера') } },
+        signIn: { ...authLocale.signIn, start: { ...authLocale.signIn?.start, title: t('Вход в Betadrop'), subtitle: t('С возвращением') } },
+        signUp: { ...authLocale.signUp, start: { ...authLocale.signUp?.start, title: t('Регистрация в Betadrop'), subtitle: t('Один аккаунт для тестера и фаундера') } },
       }}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
