@@ -15,12 +15,12 @@ router.post("/applications", async (req, res) => {
   const result = await transaction(async client => {
     const { rows: [c] } = await client.query("SELECT * FROM bd_campaigns WHERE id=$1", [data.campaignId]);
     check(c, "Кампания не найдена", 404);
-    check(!c.demo, "Это демонстрационная кампания. Заявки недоступны.");
+    check(!c.demo, "Демо-кампания не принимает заявки");
     check(c.owner_id !== user, "Нельзя тестировать собственную кампанию");
     check(c.status === "active" && c.filled_slots < c.slots, "Набор закрыт", 409);
     check(data.answers.length === c.screening_questions.length, "Ответьте на все вопросы");
     const { rows: [p] } = await client.query("SELECT trust_score FROM bd_profiles WHERE id=$1", [user]);
-    check(p.trust_score >= c.min_trust, "Недостаточный Trust Score", 403);
+    check(p.trust_score >= c.min_trust, "Trust Score ниже порога кампании", 403);
     const { rows: [prior] } = await client.query("SELECT id FROM bd_applications WHERE campaign_id=$1 AND user_id=$2", [c.id,user]);
     check(!prior, "Вы уже подали заявку", 409);
     // Auto-approve only testers who pass the campaign's Trust Score filter; the rest wait for manual review.

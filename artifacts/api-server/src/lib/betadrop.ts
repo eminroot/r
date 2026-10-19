@@ -59,7 +59,7 @@ export async function approveReport(client: Client, id: number) {
   const { rows: [s] } = await client.query(`SELECT s.status,s.media_url,a.user_id,a.id AS application_id,c.id AS campaign_id,c.owner_id,c.title,c.reward,c.reward_codes FROM bd_submissions s JOIN bd_applications a ON a.id=s.application_id JOIN bd_campaigns c ON c.id=a.campaign_id WHERE s.id=$1`, [id]);
   check(s, "Отчёт не найден", 404);
   check(s.status === "pending", "Отчёт уже рассмотрен", 409);
-  check(s.reward_codes.length, "Пул наград исчерпан; обратитесь к владельцу кампании", 409);
+  check(s.reward_codes.length, "Коды наград в кампании закончились", 409);
   await client.query("INSERT INTO bd_rewards(submission_id,user_id,campaign_title,title,code) VALUES($1,$2,$3,$4,$5)", [id, s.user_id, s.title, s.reward, s.reward_codes[0]]);
   await client.query("UPDATE bd_campaigns SET reward_codes=$2 WHERE id=$1", [s.campaign_id, s.reward_codes.slice(1)]);
   await client.query("UPDATE bd_submissions SET status='approved' WHERE id=$1", [id]);

@@ -91,23 +91,22 @@ const clerkAppearance = {
   },
 };
 
-function AuthFrame({ children, k }: { children: ReactNode; k: string }) {
+function AuthFrame({ children }: { children: ReactNode }) {
   const { t } = useLocale();
   return (
-    <div className="relative min-h-[100dvh] grid grid-cols-1 lg:grid-cols-2 bg-background">
-      <div className="absolute top-4 right-4 z-10"><LanguageSwitcher /></div>
-      <div className="hidden lg:flex flex-col justify-between border-r border-border p-10 grid-bg">
+    <div className="relative min-h-[100dvh] grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] bg-background">
+      <div className="absolute top-3 right-4 z-10"><LanguageSwitcher /></div>
+      <div className="hidden lg:flex flex-col justify-between border-r border-border p-10">
         <Logo />
-        <div>
-          <div className="label-k">{t(k)}</div>
-          <h1 className="text-4xl font-bold tracking-tight mt-3 leading-tight">{t('Инженерный фидбек.')}<br /><span className="text-primary">{t('Реальные награды.')}</span></h1>
-          <div className="mono text-[12px] mt-8 panel p-4 flex flex-col gap-1.5 max-w-md">
-            <span><span className="text-live">auth.session</span> <span className="text-muted-foreground">{t('ожидание входа')}</span></span>
-            <span><span className="text-streak">trust.init</span> <span className="text-muted-foreground">50 / xp 0 / streak 0</span></span>
-            <span><span className="text-primary">vault.ready</span> <span className="text-muted-foreground">{t('награды появятся после ревью')}</span></span>
-          </div>
+        <div className="max-w-md">
+          <h1 className="t-h1">{t('Инженерный фидбек для софта.')}</h1>
+          <ul className="mt-6 flex flex-col gap-3 t-body muted">
+            <li>{t('Тестеры получают лицензии и API-кредиты за принятые отчёты.')}</li>
+            <li>{t('Фаундеры получают воспроизводимые баг-репорты и разборы онбординга.')}</li>
+            <li>{t('Один аккаунт: роль переключается в шапке.')}</li>
+          </ul>
         </div>
-        <div className="meta">BETADROP</div>
+        <span className="meta">BETADROP</span>
       </div>
       <div className="min-w-0 flex items-center justify-center px-4 py-20">{children}</div>
     </div>
@@ -116,7 +115,7 @@ function AuthFrame({ children, k }: { children: ReactNode; k: string }) {
 
 function SignInPage() {
   return (
-    <AuthFrame k="вход">
+    <AuthFrame>
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
     </AuthFrame>
   );
@@ -124,7 +123,7 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <AuthFrame k="регистрация">
+    <AuthFrame>
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
     </AuthFrame>
   );
@@ -165,7 +164,6 @@ function ClerkQueryClientCacheInvalidator() {
 const p = (C: () => ReactNode) => () => <Private><C /></Private>;
 const PDash = p(TesterDashboard);
 const PVault = p(Vault);
-const PProfile = p(ProfilePage);
 const PFCampaigns = p(FounderCampaigns);
 const PNew = p(NewCampaign);
 const PSubs = p(FounderSubmissions);
@@ -180,20 +178,21 @@ function Routes() {
   const { language, t } = useLocale();
   const [path] = useLocation();
   useEffect(() => {
-    const section = path.startsWith('/sign-in') ? 'вход'
-      : path.startsWith('/sign-up') ? 'регистрация'
+    const section = path.startsWith('/sign-in') ? 'Вход'
+      : path.startsWith('/sign-up') ? 'Регистрация'
       : path === '/pricing' ? 'Тарифы'
       : path === '/docs' ? 'Документация'
-      : path.includes('/vault') ? 'Хранилище наград'
+      : path.includes('/vault') ? 'Награды'
       : path.includes('/profile') ? 'Профиль'
-      : path.includes('/submissions') ? 'Заявки и отчёты'
+      : path.includes('/submissions') ? 'Входящие'
       : path.includes('/integrations') ? 'Интеграции'
       : path.includes('/campaigns/new') ? 'Новая кампания'
-      : path.includes('/campaigns') ? 'Кампании'
-      : path.includes('/dashboard') ? 'Дашборд'
-      : path.includes('/explore') ? 'Каталог' : 'Инженерный фидбек.';
+      : path.startsWith('/app/founder/campaigns') ? 'Кампании'
+      : path.startsWith('/app/campaigns/') ? 'Тест'
+      : path.includes('/dashboard') ? 'Мои тесты'
+      : path.includes('/explore') ? 'Каталог тестов' : 'Инженерный фидбек для софта.';
     const title = `${t(section)} | BETADROP`;
-    const description = t('Бета-тестирование, инженерные отзывы и награды.');
+    const description = t('Бета-тесты для софта: баг-репорты от технических тестеров, награды за принятые отчёты.');
     document.title = title;
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
       document.querySelector(selector)?.setAttribute('content', description);
@@ -214,7 +213,7 @@ function Routes() {
         <Route path="/app/campaigns/:id" component={CampaignPage} />
         <Route path="/app/tester/dashboard" component={PDash} />
         <Route path="/app/tester/vault" component={PVault} />
-        <Route path="/app/tester/profile/:username" component={PProfile} />
+        <Route path="/app/tester/profile/:username" component={ProfilePage} />
         <Route path="/app/founder/campaigns/new" component={PNew} />
         <Route path="/app/founder/campaigns" component={PFCampaigns} />
         <Route path="/app/founder/submissions" component={PSubs} />
@@ -239,8 +238,8 @@ function ClerkProviderWithRoutes() {
       signUpUrl={`${basePath}/sign-up`}
       localization={{
         ...authLocale,
-        signIn: { ...authLocale.signIn, start: { ...authLocale.signIn?.start, title: t('Вход в BETADROP'), subtitle: t('Продолжите тестирование и ревью') } },
-        signUp: { ...authLocale.signUp, start: { ...authLocale.signUp?.start, title: t('Аккаунт BETADROP'), subtitle: t('Тестируйте продукты и получайте награды') } },
+        signIn: { ...authLocale.signIn, start: { ...authLocale.signIn?.start, title: t('Вход в BETADROP'), subtitle: t('С возвращением') } },
+        signUp: { ...authLocale.signUp, start: { ...authLocale.signUp?.start, title: t('Регистрация в BETADROP'), subtitle: t('Один аккаунт для тестера и фаундера') } },
       }}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}

@@ -6,10 +6,11 @@ export default function NotFound() {
   const { t } = useLocale();
   return (
     <Page>
-      <div className="panel grid-bg py-20 flex flex-col items-center text-center gap-3">
-        <div className="mono text-5xl font-semibold text-streak">404</div>
-        <div className="text-sm">{t('Маршрут не найден')}</div>
-        <Link href="/app/explore" className="btn btn-sm mt-2">{t('В каталог')}</Link>
+      <div className="py-16">
+        <div className="num text-[13px] muted">404</div>
+        <h1 className="t-h1 mt-2">{t('Такой страницы нет')}</h1>
+        <p className="t-body muted mt-2">{t('Возможно, ссылка устарела или кампанию удалили.')}</p>
+        <Link href="/app/explore" className="btn mt-6">{t('Открыть каталог')}</Link>
       </div>
     </Page>
   );

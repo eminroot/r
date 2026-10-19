@@ -7,7 +7,7 @@ export function LanguageSwitcher() {
       aria-label={t('Язык')}
       title={t('Язык')}
       data-testid="select-language"
-      className="inp mono !h-7 !py-0 !px-2 !w-[112px] text-[11px] shrink-0"
+      className="inp !h-7 !py-0 !pl-2 !pr-1 !w-auto text-[12px] shrink-0"
       value={language}
       onChange={event => setLanguage(event.target.value as Language)}
     >

@@ -50,10 +50,12 @@ fresh.events.storage({ key: 'bd-language', newValue: null });
 assert.equal(fresh.api.getLanguage(), 'en');
 const authored = { demo: false, title: 'Название пользователя' };
 assert.equal(fresh.api.localizeCampaign(authored), authored, 'Authored content must not be translated');
-const demo = { demo: true, title: 'VectorDB: поиск быстрее мысли', description: '', reward: '3 месяца Pro License', instructions: '', screeningQuestions: [] };
-assert.equal(fresh.api.localizeCampaign(demo).title, 'VectorDB: search at the speed of thought');
+const demo = { demo: true, title: 'Ferrite: миграции Postgres из терминала', description: '', reward: '12 месяцев Ferrite Pro', instructions: '', screeningQuestions: [] };
+fresh.api.setLanguage('en');
+assert.equal(fresh.api.localizeCampaign(demo).title, 'Ferrite: Postgres migrations from the terminal');
+assert.equal(fresh.api.localizeCampaign(demo).reward, '12 months of Ferrite Pro');
 
-const dictionaries = [['core', 'core'], ['public', 'publicMessages'], ['workspace', 'workspaceMessages']].map(([name, exported]) =>
+const dictionaries = [['core', 'core'], ['public', 'publicMessages'], ['workspace', 'workspaceMessages'], ['demo', 'demoMessages']].map(([name, exported]) =>
   fresh.load(path.join(root, `lib/locales/${name}.ts`))[exported]);
 const messages = Object.assign({}, ...dictionaries);
 for (const [key, translations] of Object.entries(messages)) {
@@ -64,25 +66,32 @@ for (const [key, translations] of Object.entries(messages)) {
     assert.equal(placeholders(value), placeholders(key), `Placeholder mismatch for ${key}`);
     assert(!/[А-Яа-яЁё]/.test(value), `Untranslated Russian in ${key}`);
   }
+  // Copy style: no em dashes or double hyphens in any language.
+  for (const value of [key, ...translations]) assert(!/—|--/.test(value), `Em dash or "--" in ${key}`);
 }
 
 const missing = new Set();
-for (const directory of ['pages', 'components']) {
-  for (const file of fs.readdirSync(path.join(root, directory)).filter(file => file.endsWith('.tsx'))) {
-    const fullPath = path.join(root, directory, file);
-    const source = ts.createSourceFile(fullPath, fs.readFileSync(fullPath, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    function visit(node) {
-      if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isJsxText(node)) && /[А-Яа-яЁё]/.test(node.text)) {
-        const text = node.text.trim();
-        // These are server-generated event prefixes parsed before localization,
-        // not UI literals; the resulting interpolation is translated.
-        const protocolPrefix = ['Новая заявка:', 'Отчёт отправлен:'].includes(text);
-        if (text && !protocolPrefix && !messages[text]) missing.add(`${file}: ${text}`);
-      }
-      ts.forEachChild(node, visit);
+// Every Russian literal in the web app, the API error messages and the demo seed needs EN/AZ text.
+const repo = path.resolve(root, '../../..');
+const sources = [
+  ...['pages', 'components'].flatMap(directory => fs.readdirSync(path.join(root, directory)).filter(file => file.endsWith('.tsx')).map(file => path.join(root, directory, file))),
+  path.join(root, 'App.tsx'), path.join(root, 'lib/app.tsx'),
+  ...['lib', 'routes'].flatMap(directory => fs.readdirSync(path.join(repo, 'artifacts/api-server/src', directory)).filter(file => file.endsWith('.ts')).map(file => path.join(repo, 'artifacts/api-server/src', directory, file))),
+  path.join(repo, 'artifacts/api-server/src/app.ts'),
+  path.join(repo, 'scripts/src/seed-demo.ts'),
+];
+for (const fullPath of sources) {
+  const file = path.relative(repo, fullPath);
+  const source = ts.createSourceFile(fullPath, fs.readFileSync(fullPath, 'utf8'), ts.ScriptTarget.Latest, true, fullPath.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  function visit(node) {
+    if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isJsxText(node)) && /[А-Яа-яЁё]/.test(node.text)) {
+      const text = node.text.trim();
+      // SQL that strips legacy Russian prefixes from old activity rows is not UI text.
+      if (text && !/^SELECT /.test(text) && !messages[text]) missing.add(`${file}: ${text}`);
     }
-    visit(source);
+    ts.forEachChild(node, visit);
   }
+  visit(source);
 }
-assert.equal([...missing].join('\n'), '', 'Every Russian UI literal needs EN/AZ coverage');
+assert.equal([...missing].join('\n'), '', 'Every Russian literal needs EN/AZ coverage');
 console.log(`Passed language defaults, persistence, cross-tab sync, demo isolation, interpolation and ${Object.keys(messages).length} translation entries.`);

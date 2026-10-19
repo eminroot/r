@@ -18,16 +18,16 @@ router.get("/campaigns/:id", async (req, res) => {
 router.post("/campaigns", async (req, res) => {
   const user = await identity(req);
   const data = CreateCampaignBody.parse(req.body);
-  check(httpUrl(data.productUrl), "Укажите HTTP(S) ссылку на продукт");
-  check(data.method !== "secret_code" || (data.secretCode?.trim().length ?? 0) >= 4, "Секретный код должен содержать не менее 4 символов");
+  check(httpUrl(data.productUrl), "Ссылка на продукт должна начинаться с http:// или https://");
+  check(data.method !== "secret_code" || (data.secretCode?.trim().length ?? 0) >= 4, "Секретный код: от 4 символов");
   const codes = data.rewardCodes.map(c => c.trim());
   const rewardValue = data.rewardValue ?? 0;
   // Spec rule: rewards worth more than $50 are only open to Trust Score 80+.
   const minTrust = rewardValue > HIGH_VALUE_REWARD ? Math.max(data.minTrust, HIGH_VALUE_TRUST) : data.minTrust;
-  check(codes.every(Boolean) && new Set(codes).size === codes.length && codes.length >= data.slots, "Добавьте уникальный непустой промокод для каждого места");
+  check(codes.every(Boolean) && new Set(codes).size === codes.length && codes.length >= data.slots, "Нужен свой код награды на каждое место, без повторов");
   const c = await transaction(async client => {
     const { rows: [count] } = await client.query("SELECT count(*)::int AS n FROM bd_campaigns WHERE owner_id=$1 AND status='active'", [user]);
-    check(count.n < 1, "Starter: одна активная кампания. Приостановите текущую.", 409);
+    check(count.n < 1, "На Starter набор открыт только в одной кампании. Поставьте текущую на паузу.", 409);
     const { rows: [row] } = await client.query(`INSERT INTO bd_campaigns(owner_id,title,company,description,category,tags,reward,reward_value,method,slots,instructions,product_url,screening_questions,min_trust,auto_approve,auto_approve_trust,secret_hash,reward_codes)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
     [user,data.title,data.company,data.description,data.category,data.tags,data.reward,rewardValue,data.method,data.slots,data.instructions,data.productUrl,data.screeningQuestions,minTrust,data.autoApprove,data.autoApproveTrust ?? 0,data.method === "secret_code" && data.secretCode ? hashCode(data.secretCode.trim()) : null,codes]);
@@ -44,7 +44,7 @@ router.patch("/campaigns/:id", async (req, res) => {
     check(c, "Кампания не найдена", 404);
     if (data.status === "active") {
       const { rows: [count] } = await client.query("SELECT count(*)::int AS n FROM bd_campaigns WHERE owner_id=$1 AND status='active' AND id<>$2", [user,id]);
-      check(count.n < 1, "Starter: одна активная кампания", 409);
+      check(count.n < 1, "На Starter набор открыт только в одной кампании. Поставьте текущую на паузу.", 409);
     }
     await client.query("UPDATE bd_campaigns SET title=$2,description=$3,instructions=$4,status=$5 WHERE id=$1", [id,data.title ?? c.title,data.description ?? c.description,data.instructions ?? c.instructions,data.status ?? c.status]);
     return (await client.query(`${campaignSelect} WHERE id=$1`, [id])).rows[0];
@@ -57,7 +57,7 @@ router.delete("/campaigns/:id", async (req, res) => {
     const { rows: [c] } = await client.query("SELECT id FROM bd_campaigns WHERE id=$1 AND owner_id=$2", [id,user]);
     check(c, "Кампания не найдена", 404);
     const { rows } = await client.query("SELECT id FROM bd_applications WHERE campaign_id=$1 LIMIT 1", [id]);
-    check(!rows.length, "В кампании есть заявки: приостановите её вместо удаления", 409);
+    check(!rows.length, "В кампании уже есть заявки. Её можно завершить, но не удалить.", 409);
     await client.query("DELETE FROM bd_campaigns WHERE id=$1", [id]);
   });
   res.status(204).end();

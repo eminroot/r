@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { core } from './locales/core';
 import { publicMessages } from './locales/public';
 import { workspaceMessages } from './locales/workspace';
+import { demoMessages } from './locales/demo';
 import type { Campaign } from '@workspace/api-client-react';
 
 export type Language = 'en' | 'ru' | 'az';
@@ -17,7 +18,7 @@ function initialLanguage(): Language {
 }
 let language: Language = initialLanguage();
 const listeners = new Set<() => void>();
-const messages = { ...core, ...publicMessages, ...workspaceMessages };
+const messages = { ...core, ...publicMessages, ...workspaceMessages, ...demoMessages };
 export const getLanguage = () => language;
 export const getLocale = () => ({ en: 'en-US', ru: 'ru-RU', az: 'az-AZ' }[language]);
 export function setLanguage(next: Language) {

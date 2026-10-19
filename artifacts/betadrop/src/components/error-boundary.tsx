@@ -39,27 +39,13 @@ function toError(value: unknown): Error {
 function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
   const { t } = useLocale();
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-6">
-      <div className="max-w-lg w-full text-center">
-        <h1 className="text-xl font-semibold text-gray-900">
-          {t('Что-то пошло не так')}
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          {t('В этом разделе произошла ошибка. Остальная часть приложения продолжает работать.')}
-        </p>
+    <div className="min-h-[60vh] w-full flex items-center justify-center bg-background p-6" role="alert">
+      <div className="max-w-lg w-full">
+        <h1 className="t-h2">{t('Эта часть страницы не загрузилась')}</h1>
+        <p className="t-body muted mt-2">{t('Остальное работает. Попробуйте обновить этот блок.')}</p>
         {/* Dev only: messages can carry API responses and other internals. */}
-        {import.meta.env.DEV ? (
-          <pre className="mt-4 overflow-x-auto rounded bg-gray-100 p-3 text-left text-xs text-gray-800">
-            {error.message || String(error)}
-          </pre>
-        ) : null}
-        <button
-          type="button"
-          onClick={resetError}
-          className="mt-4 rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
-        >
-          {t('Повторить')}
-        </button>
+        {import.meta.env.DEV ? <pre className="code mt-4">{error.message || String(error)}</pre> : null}
+        <button type="button" onClick={resetError} className="btn btn-primary mt-5">{t('Повторить')}</button>
       </div>
     </div>
   );

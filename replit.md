@@ -4,12 +4,14 @@ Multilingual beta-testing marketplace connecting software founders and technical
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-server run dev`: run the API server (port 5000)
+- `pnpm run typecheck`: full typecheck across all packages
+- `pnpm run build`: typecheck + build all packages
+- `pnpm --filter @workspace/api-spec run codegen`: regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/db run push`: push DB schema changes (dev only)
+- `pnpm --filter @workspace/scripts run seed-demo`: add demo campaigns to an empty catalog
+- `pnpm --filter @workspace/api-server test`: lifecycle test against a throwaway DATABASE_URL
+- Required env: `DATABASE_URL` (Postgres), Clerk keys; see README.md for the full list
 
 ## Stack
 
@@ -22,22 +24,25 @@ Multilingual beta-testing marketplace connecting software founders and technical
 
 ## Where things live
 
-- `artifacts/betadrop` — React frontend at `/`.
-- `artifacts/api-server` — Express backend at `/api`; domain routes in `src/routes`, transactional transitions in `src/lib/betadrop.ts`.
-- `lib/api-spec/openapi.yaml` — API contract; regenerate clients after changes.
-- `lib/db/src/schema` — PostgreSQL schema.
+- `artifacts/betadrop`: React frontend at `/`.
+- `artifacts/api-server`: Express backend at `/api`; domain routes in `src/routes`, transactional transitions in `src/lib/betadrop.ts`.
+- `lib/api-spec/openapi.yaml`: API contract; regenerate clients after changes.
+- `lib/db/src/schema`: PostgreSQL schema.
 
 ## Architecture decisions
 
-- The first release is a core MVP, not the entire production specification. Billing, external integrations, crypto payouts, administrator moderation/arbitration, Pro Tester subscriptions and uploads are not connected.
+- Not built yet: billing, crypto payouts, administrator moderation/arbitration, Pro Tester subscriptions, Slack, uploads. The UI marks them as coming later.
+- Webhook verification: founders create API keys (stored as sha256) and call `POST /api/v1/verifications`; a webhook campaign needs that confirmation before the tester can report.
+- Outgoing webhooks go only to public HTTPS hosts (checked on save and on every delivery) and are signed with HMAC-SHA256.
 - Reports accept external media links rather than uploaded bytes. Add App Storage before implementing uploads.
 - Role switching changes the workspace, not authority. The API checks campaign ownership and tester identity independently.
 - Demo campaigns are clearly marked and cannot receive applications. Public metrics exclude demo campaigns.
-- Day streaks use UTC calendar days. Do not silently change this convention before introducing a user timezone setting.
+- Day streaks use UTC calendar days. Do not silently change this convention before introducing a user timezone setting. Freezes are derived from activity (one per 7 days in a row, max 2), not stored.
+- UI copy: no em dashes, no `--`, short plain sentences. The i18n test enforces the punctuation.
 
 ## Product
 
-Public landing/catalog/pricing, Clerk accounts, campaign creation and management, screening/application review, text/media-link/email/secret-code reports, founder review, automatic overdue review approval, unique code vault, Trust Score/XP/activity profile.
+Landing, catalog, pricing, docs; Clerk accounts; campaigns with screening, Trust Score filters and auto-approval; four verification methods; founder inbox with CSV/Jira export and GitHub issue links; integrations (API keys, signed webhooks); 48h execution and 72h review deadlines; reward vault; public tester profiles with heatmap, streak freezes and badges.
 
 ## User preferences
 

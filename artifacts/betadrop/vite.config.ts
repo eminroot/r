@@ -72,6 +72,8 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    // On Replit the router sends /api to the API server. Locally, set API_URL=http://localhost:8080.
+    proxy: process.env.API_URL ? { '/api': { target: process.env.API_URL, changeOrigin: true } } : undefined,
   },
   preview: {
     port,

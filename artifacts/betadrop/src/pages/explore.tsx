@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { useListCampaigns, getListCampaignsQueryKey } from '@workspace/api-client-react';
 import { Page } from '@/components/shell';
-import { CampaignRow, Empty, ErrorBox, PageHead, SkelRows } from '@/components/kit';
-import { CATEGORIES } from '@/lib/app';
+import { CAMPAIGN_COLUMNS, CampaignRow, Empty, ErrorBox, PageHead, SkelRows } from '@/components/kit';
+import { CATEGORIES, METHODS, methodLabel } from '@/lib/app';
 import { useLocale } from '@/lib/i18n';
 
 export default function Explore() {
@@ -12,54 +12,52 @@ export default function Explore() {
   const [dq, setDq] = useState('');
   const [cat, setCat] = useState('');
   const [method, setMethod] = useState('');
-  const [hideDemo, setHideDemo] = useState(false);
+  const [openOnly, setOpenOnly] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setDq(q.trim()), 250);
-    return () => clearTimeout(t);
+    const id = setTimeout(() => setDq(q.trim()), 250);
+    return () => clearTimeout(id);
   }, [q]);
   const params = useMemo(() => ({ ...(dq ? { search: dq } : {}), ...(cat ? { category: cat } : {}) }), [dq, cat]);
-  const { data, isLoading, error, refetch, isFetching } = useListCampaigns(params, { query: { queryKey: getListCampaignsQueryKey(params) } });
-  const list = (data ?? []).filter((c) => (!method || c.method === method) && (!hideDemo || !c.demo));
+  const { data, isLoading, error, refetch } = useListCampaigns(params, { query: { queryKey: getListCampaignsQueryKey(params) } });
+  const list = (data ?? []).filter((c) => (!method || c.method === method) && (!openOnly || (!c.demo && c.status === 'active' && c.filledSlots < c.slots)));
+  const reset = () => { setQ(''); setCat(''); setMethod(''); setOpenOnly(false); };
 
   return (
     <Page wide>
-      <PageHead k={t('каталог')} title={t('Бета-кампании')} sub={t('Ищите по названию, компании и тегам. Демо-кампании показывают формат, но не принимают заявки.')} />
-      <div className="flex flex-col lg:flex-row gap-2 mb-4">
+      <PageHead title="Каталог тестов" sub="Выберите продукт, ответьте на пару вопросов фаундера и получите доступ. Демо-кампании показывают формат и не принимают заявки." />
+      <div className="flex flex-col lg:flex-row gap-2 mb-3">
         <div className="relative flex-1">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input className="inp pl-8" aria-label={t('Поиск кампаний')} placeholder={t('Поиск: CLI, SDK, Kubernetes...')} value={q} onChange={(e) => setQ(e.target.value)} data-testid="input-search" />
-          {isFetching && <span className="absolute right-3 top-1/2 -translate-y-1/2 dot bg-primary live-pulse" />}
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 muted" />
+          <input className="inp pl-9" type="search" aria-label={t('Поиск')} placeholder={t('Название, компания или описание')} value={q} onChange={(e) => setQ(e.target.value)} data-testid="input-search" />
         </div>
-        <select className="inp lg:w-44" aria-label={t('Метод верификации')} value={method} onChange={(e) => setMethod(e.target.value)} data-testid="select-method">
-          <option value="">{t('Любая верификация')}</option>
-          <option value="secret_code">secret_code</option>
-          <option value="email_match">email_match</option>
-          <option value="media">media</option>
+        <select className="inp lg:w-52" aria-label={t('Способ проверки')} value={method} onChange={(e) => setMethod(e.target.value)} data-testid="select-method">
+          <option value="">{t('Любой способ проверки')}</option>
+          {METHODS.map((m) => <option key={m} value={m}>{methodLabel(m)}</option>)}
         </select>
         <label className="btn select-none">
-          <input type="checkbox" checked={hideDemo} onChange={(e) => setHideDemo(e.target.checked)} className="accent-[hsl(var(--primary))]" data-testid="checkbox-hide-demo" />
-          {t('Скрыть демо')}
+          <input type="checkbox" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} className="accent-[hsl(var(--primary))]" data-testid="checkbox-open-only" />
+          {t('Только с местами')}
         </label>
       </div>
-      <div className="flex gap-px bg-border border border-border mb-6 overflow-x-auto w-fit max-w-full">
+      <div className="seg mb-6" role="tablist">
         {['', ...CATEGORIES].map((c) => (
-          <button key={c || 'all'} onClick={() => setCat(c)} className={`px-3 h-8 text-[12px] mono whitespace-nowrap transition-colors ${cat === c ? 'bg-foreground text-background' : 'bg-surface text-muted-foreground hover:text-foreground'}`} data-testid={`button-category-${c || 'all'}`}>
+          <button key={c || 'all'} role="tab" aria-selected={cat === c} data-active={cat === c} onClick={() => setCat(c)} data-testid={`button-category-${c || 'all'}`}>
             {c ? t(c) : t('Все')}
           </button>
         ))}
       </div>
-      <div className="hidden md:grid grid-cols-[1fr_140px_150px_110px] gap-4 px-4 pb-2 label-k">
-        <span>{t('кампания')}</span><span>{t('верификация')}</span><span>{t('награда')}</span><span className="text-right">{t('свободно')}</span>
-      </div>
       {isLoading && <SkelRows n={8} />}
       {error && <ErrorBox error={error} retry={() => refetch()} />}
-      {data && list.length === 0 && <Empty title={t('Ничего не найдено')} hint={t('Измените запрос или сбросьте фильтры.')} action={<button className="btn btn-sm" onClick={() => { setQ(''); setCat(''); setMethod(''); setHideDemo(false); }}>{t('Сбросить')}</button>} />}
+      {data && list.length === 0 && <Empty title="Ничего не нашлось" hint="Попробуйте другой запрос или сбросьте фильтры." action={<button className="btn btn-sm" onClick={reset}>{t('Сбросить фильтры')}</button>} />}
       {list.length > 0 && (
-        <div className="flex flex-col gap-px bg-border border border-border">
-          {list.map((c, i) => <CampaignRow key={c.id} c={c} i={i} />)}
+        <div className="border border-border">
+          <div className={`hidden md:grid ${CAMPAIGN_COLUMNS} gap-x-6 px-4 py-2 text-[12px] muted bg-background border-b border-border`}>
+            <span>{t('Продукт')}</span><span>{t('Проверка')}</span><span>{t('Награда')}</span><span>{t('Места')}</span>
+          </div>
+          <div className="stack !border-0">{list.map((c) => <CampaignRow key={c.id} c={c} />)}</div>
         </div>
       )}
-      {data && <div className="meta mt-3">{t('{count} из {total}', { count: list.length, total: data.length })}</div>}
+      {data && list.length > 0 && <div className="meta mt-3">{t('Показано {count} из {total}', { count: list.length, total: data.length })}</div>}
     </Page>
   );
 }
