@@ -1,6 +1,6 @@
-# [Project name]
+# BETADROP
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Russian-language beta-testing marketplace connecting software founders and technical testers.
 
 ## Run & Operate
 
@@ -22,23 +22,35 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/betadrop` — React frontend at `/`.
+- `artifacts/api-server` — Express backend at `/api`; domain routes in `src/routes`, transactional transitions in `src/lib/betadrop.ts`.
+- `lib/api-spec/openapi.yaml` — API contract; regenerate clients after changes.
+- `lib/db/src/schema` — PostgreSQL schema.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first release is a core MVP, not the entire production specification. Billing, external integrations, crypto payouts, administrator moderation/arbitration, Pro Tester subscriptions and uploads are not connected.
+- Reports accept external media links rather than uploaded bytes. Add App Storage before implementing uploads.
+- Role switching changes the workspace, not authority. The API checks campaign ownership and tester identity independently.
+- Demo campaigns are clearly marked and cannot receive applications. Public metrics exclude demo campaigns.
+- Day streaks use UTC calendar days. Do not silently change this convention before introducing a user timezone setting.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Public landing/catalog/pricing, Clerk accounts, campaign creation and management, screening/application review, text/media-link/email/secret-code reports, founder review, automatic overdue review approval, unique code vault, Trust Score/XP/activity profile.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Follow the provided BETADROP specification: dense utility UI, square corners, no shadows or gradients, 1px borders.
+- Light palette: background #F6F8FA, surface #FFFFFF, border #D0D7DE, text #1F2328, secondary #656D76, accent #548EAA.
+- Dark palette: background #0D1117, surface #161B22, border #30363D, text #E6EDF3, secondary #8B949E, accent #58A6FF.
+- Sans-serif body text and monospaced metadata. Preserve the Tester/Founder role switcher.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Never expose campaign reward-code pools or verification hashes in public responses.
+- Authenticated screens require real Clerk sessions; do not add demo authentication or bypasses.
+- Codegen uses `Headers.entries()`; the shared API client requires `dom.iterable` in its TypeScript libs.
 
 ## Pointers
 

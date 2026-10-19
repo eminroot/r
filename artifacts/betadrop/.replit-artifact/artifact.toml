@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "BETADROP"
+description = "Платформа бета-тестирования для разработчиков и технических тестировщиков: кампании, верификация отчётов и награды."
+version = "1.0.0"
+id = "artifacts/betadrop"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24580
+
+[services.development]
+run = "pnpm --filter @workspace/betadrop run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/betadrop", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/betadrop/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24580"
+BASE_PATH = "/"
