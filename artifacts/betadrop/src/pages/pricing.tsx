@@ -2,6 +2,7 @@ import { Link } from 'wouter';
 import { Check } from 'lucide-react';
 import { Page } from '@/components/shell';
 import { PageHead } from '@/components/kit';
+import { useLocale } from '@/lib/i18n';
 
 const PLANS = [
   { name: 'Starter', price: 0, note: 'Доступно сейчас', live: true, pts: ['1 активная кампания · до 15 тестеров', 'Secret Code и Email Match', 'Базовый таргетинг', 'Ручной просмотр отчётов', 'Обычный листинг в каталоге'] },
@@ -10,27 +11,28 @@ const PLANS = [
 ];
 
 export function PricingGrid() {
+  const { t } = useLocale();
   return (
     <div className="grid md:grid-cols-3 gap-px bg-border border border-border">
       {PLANS.map((p) => (
         <div key={p.name} className="bg-surface p-6 flex flex-col" data-testid={`card-plan-${p.name.toLowerCase()}`}>
           <div className="flex items-center justify-between">
             <span className="font-semibold">{p.name}</span>
-            <span className="tag" style={p.live ? { color: 'hsl(var(--live))', borderColor: 'currentColor' } : { color: 'hsl(var(--streak))', borderColor: 'currentColor' }}>{p.note}</span>
+            <span className="tag" style={p.live ? { color: 'hsl(var(--live))', borderColor: 'currentColor' } : { color: 'hsl(var(--streak))', borderColor: 'currentColor' }}>{t(p.note)}</span>
           </div>
           <div className="mt-5 flex items-baseline gap-1">
             <span className="text-4xl font-bold mono tabular-nums">${p.price}</span>
-            <span className="meta">/ мес</span>
+            <span className="meta">{t('/ мес')}</span>
           </div>
           <ul className="mt-6 flex flex-col gap-2 flex-1">
             {p.pts.map((x) => (
-              <li key={x} className="flex gap-2 text-sm"><Check className="w-4 h-4 text-live shrink-0 mt-0.5" />{x}</li>
+              <li key={x} className="flex gap-2 text-sm"><Check className="w-4 h-4 text-live shrink-0 mt-0.5" />{t(x)}</li>
             ))}
           </ul>
           {p.live ? (
-            <Link href="/sign-up" className="btn btn-primary mt-6 w-full" data-testid="link-plan-starter">Начать бесплатно</Link>
+            <Link href="/sign-up" className="btn btn-primary mt-6 w-full" data-testid="link-plan-starter">{t('Начать бесплатно')}</Link>
           ) : (
-            <button className="btn mt-6 w-full" disabled data-testid={`button-plan-${p.name.toLowerCase()}`}>Оплата не подключена</button>
+            <button className="btn mt-6 w-full" disabled data-testid={`button-plan-${p.name.toLowerCase()}`}>{t('Оплата не подключена')}</button>
           )}
         </div>
       ))}
@@ -39,12 +41,13 @@ export function PricingGrid() {
 }
 
 export default function Pricing() {
+  const { t } = useLocale();
   return (
     <Page>
-      <PageHead k="тарифы" title="Простые тарифы для фаундеров" sub="Starter работает уже сейчас. Платные тарифы описаны честно: платёжный провайдер ещё не подключён, поэтому оформить их нельзя." />
+      <PageHead k={t('тарифы')} title={t('Простые тарифы для фаундеров')} sub={t('Starter работает уже сейчас. Платные тарифы описаны честно: платёжный провайдер ещё не подключён, поэтому оформить их нельзя.')} />
       <PricingGrid />
-      <div className="panel mt-6 p-4 meta">Ранний доступ: медиа-отчёты и CSV сейчас доступны бесплатно. Платные тарифы и интеграции ещё не подключены.</div>
-      <div className="panel mt-4 p-4 meta">Дополнения по плану развития: Promoted Listing — $29 / 7 дней; Newsletter & Discord Blast — $49; Pro Tester Pass — $4.99 / мес. Покупка пока недоступна.</div>
+      <div className="panel mt-6 p-4 meta">{t('Ранний доступ: медиа-отчёты и CSV сейчас доступны бесплатно. Платные тарифы и интеграции ещё не подключены.')}</div>
+      <div className="panel mt-4 p-4 meta">{t('Дополнения по плану развития: Promoted Listing — $29 / 7 дней; Newsletter & Discord Blast — $49; Pro Tester Pass — $4.99 / мес. Покупка пока недоступна.')}</div>
     </Page>
   );
 }

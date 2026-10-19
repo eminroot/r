@@ -4,6 +4,7 @@ export const campaigns = pgTable("bd_campaigns", {
   ownerId: text("owner_id").notNull(),
   title: text("title").notNull(),
   company: text("company").notNull(),
+  logoUrl: text("logo_url").notNull().default(""),
   description: text("description").notNull(),
   category: text("category").notNull(),
   tags: text("tags").array().notNull().default([]),

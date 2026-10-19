@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
+import { t, getLocale } from './i18n';
 import type { QueryClient } from '@tanstack/react-query';
 import {
   getListCampaignsQueryKey,
@@ -55,7 +56,7 @@ export function useSignedIn() {
 
 export function errMsg(e: unknown): string {
   const any = e as { data?: { error?: string; message?: string } | null; message?: string } | null;
-  return any?.data?.error || any?.data?.message || any?.message || 'Неизвестная ошибка';
+  return t(any?.data?.error || any?.data?.message || any?.message || 'Неизвестная ошибка');
 }
 
 export function invalidateAll(qc: QueryClient) {
@@ -77,34 +78,34 @@ export function fmtDate(s: string | null | undefined) {
   if (!s) return '—';
   const d = new Date(s);
   if (isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString(getLocale(), { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export function fmtDateTime(s: string | null | undefined) {
   if (!s) return '—';
   const d = new Date(s);
   if (isNaN(d.getTime())) return '—';
-  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleString(getLocale(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
 export function timeLeft(s: string | null | undefined) {
   if (!s) return null;
   const ms = new Date(s).getTime() - Date.now();
   if (isNaN(ms)) return null;
-  if (ms <= 0) return 'истёк';
+  if (ms <= 0) return t('истёк');
   const h = Math.floor(ms / 3600000);
-  if (h < 48) return `${h} ч`;
-  return `${Math.floor(h / 24)} дн`;
+  if (h < 48) return t('{count} ч', { count: h });
+  return t('{count} дн', { count: Math.floor(h / 24) });
 }
 
 export const METHOD_LABEL: Record<string, string> = {
-  secret_code: 'Секретный код',
-  email_match: 'Совпадение email',
-  media: 'Медиа-доказательство',
+  get secret_code() { return t('Секретный код'); },
+  get email_match() { return t('Совпадение email'); },
+  get media() { return t('Медиа-доказательство'); },
   webhook: 'Webhook',
 };
 
-export const APP_STATUS: Record<string, { label: string; color: string }> = {
+const statusMessages: Record<string, { label: string; color: string }> = {
   pending: { label: 'На рассмотрении', color: 'hsl(var(--streak))' },
   approved: { label: 'Одобрена', color: 'hsl(var(--live))' },
   rejected: { label: 'Отклонена', color: 'hsl(var(--destructive))' },
@@ -114,5 +115,8 @@ export const APP_STATUS: Record<string, { label: string; color: string }> = {
   active: { label: 'Активна', color: 'hsl(var(--live))' },
   paused: { label: 'Пауза', color: 'hsl(var(--streak))' },
 };
+export const APP_STATUS = Object.fromEntries(Object.entries(statusMessages).map(([key, value]) => [
+  key, { color: value.color, get label() { return t(value.label); } },
+])) as Record<string, { label: string; color: string }>;
 
 export const CATEGORIES = ['DevTools', 'AI / ML', 'Web3', 'FinTech', 'Mobile'] as const;

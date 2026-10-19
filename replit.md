@@ -1,6 +1,6 @@
 # BETADROP
 
-Russian-language beta-testing marketplace connecting software founders and technical testers.
+Multilingual beta-testing marketplace connecting software founders and technical testers.
 
 ## Run & Operate
 
@@ -45,6 +45,7 @@ Public landing/catalog/pricing, Clerk accounts, campaign creation and management
 - Light palette: background #F6F8FA, surface #FFFFFF, border #D0D7DE, text #1F2328, secondary #656D76, accent #548EAA.
 - Dark palette: background #0D1117, surface #161B22, border #30363D, text #E6EDF3, secondary #8B949E, accent #58A6FF.
 - Sans-serif body text and monospaced metadata. Preserve the Tester/Founder role switcher.
+- English is the default interface language; also support Russian and Azerbaijani (Latin script). Preserve the user's selected language across visits.
 
 ## Gotchas
 

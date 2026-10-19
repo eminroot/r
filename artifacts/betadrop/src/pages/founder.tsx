@@ -25,31 +25,35 @@ import {
 import { Page } from '@/components/shell';
 import { Empty, ErrorBox, Field, InlineError, Modal, PageHead, Skel, SkelRows, Stat, Status } from '@/components/kit';
 import { useToast } from '@/hooks/use-toast';
-import { CATEGORIES, fmtDate, fmtDateTime, invalidateAll, METHOD_LABEL, useSignedIn } from '@/lib/app';
+import { APP_STATUS, CATEGORIES, errMsg, fmtDate, fmtDateTime, invalidateAll, METHOD_LABEL, useSignedIn } from '@/lib/app';
+import { useLocale } from '@/lib/i18n';
+import { severitySource } from '@/lib/locales/workspace';
 
 const MINE = { mine: true };
 const FP = { role: 'founder' as const };
 
 function EditModal({ c, onClose }: { c: Campaign; onClose: () => void }) {
+  const { t } = useLocale();
   const qc = useQueryClient();
   const { toast } = useToast();
   const upd = useUpdateCampaign();
   const [f, setF] = useState({ title: c.title, description: c.description, instructions: c.instructions });
   const ok = f.title.trim().length >= 3 && f.description.trim().length >= 20 && f.instructions.trim().length >= 10;
   return (
-    <Modal open onClose={onClose} title={`Редактировать #${c.id}`}>
-      <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); upd.mutate({ id: c.id, data: f }, { onSuccess: () => { invalidateAll(qc); toast({ title: 'Кампания обновлена' }); onClose(); } }); }}>
+    <Modal open onClose={onClose} title={t('Редактировать #{id}', { id: c.id })}>
+      <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); upd.mutate({ id: c.id, data: f }, { onSuccess: () => { invalidateAll(qc); toast({ title: t('Кампания обновлена') }); onClose(); } }); }}>
         <Field label="Название"><input className="inp" maxLength={120} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} data-testid="input-edit-title" /></Field>
         <Field label="Описание" hint="мин. 20"><textarea className="inp" rows={4} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} data-testid="input-edit-description" /></Field>
         <Field label="Инструкции" hint="мин. 10"><textarea className="inp mono text-[12px]" rows={5} value={f.instructions} onChange={(e) => setF({ ...f, instructions: e.target.value })} data-testid="input-edit-instructions" /></Field>
         <InlineError error={upd.error} />
-        <div className="flex gap-2 justify-end"><button type="button" className="btn" onClick={onClose}>Отмена</button><button className="btn btn-primary" disabled={!ok || upd.isPending} data-testid="button-save-campaign">Сохранить</button></div>
+        <div className="flex gap-2 justify-end"><button type="button" className="btn" onClick={onClose}>{t('Отмена')}</button><button className="btn btn-primary" disabled={!ok || upd.isPending} data-testid="button-save-campaign">{t('Сохранить')}</button></div>
       </form>
     </Modal>
   );
 }
 
 export function FounderCampaigns() {
+  const { t } = useLocale();
   const { signedIn } = useSignedIn();
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -60,12 +64,12 @@ export function FounderCampaigns() {
   const [editing, setEditing] = useState<Campaign | null>(null);
   const [deleting, setDeleting] = useState<Campaign | null>(null);
   const setStatus = (c: Campaign, status: CampaignUpdateStatus) =>
-    upd.mutate({ id: c.id, data: { status } }, { onSuccess: () => { invalidateAll(qc); toast({ title: status === 'paused' ? 'Кампания на паузе' : status === 'active' ? 'Кампания активна' : 'Кампания завершена' }); }, onError: (e) => toast({ title: 'Ошибка', description: (e as { data?: { error?: string } }).data?.error ?? String(e), variant: 'destructive' }) });
+    upd.mutate({ id: c.id, data: { status } }, { onSuccess: () => { invalidateAll(qc); toast({ title: t(status === 'paused' ? 'Кампания на паузе' : status === 'active' ? 'Кампания активна' : 'Кампания завершена') }); }, onError: (e) => toast({ title: t('Ошибка'), description: errMsg(e), variant: 'destructive' }) });
   const own = (list.data ?? []).filter((c) => !c.demo);
 
   return (
     <Page wide>
-      <PageHead k="фаундер / кампании" title="Ваши кампании" sub="Пауза останавливает приём заявок. Удаление необратимо." right={<Link href="/app/founder/campaigns/new" className="btn btn-primary" data-testid="link-new-campaign"><Plus className="w-3.5 h-3.5" /> Новая кампания</Link>} />
+      <PageHead k="фаундер / кампании" title="Ваши кампании" sub="Пауза останавливает приём заявок. Удаление необратимо." right={<Link href="/app/founder/campaigns/new" className="btn btn-primary" data-testid="link-new-campaign"><Plus className="w-3.5 h-3.5" /> {t('Новая кампания')}</Link>} />
       <div className="grid grid-cols-3 gap-px bg-border border border-border mb-6">
         {dash.isLoading ? Array.from({ length: 3 }).map((_, i) => <div key={i} className="bg-surface p-4"><Skel className="h-6 w-12" /></div>) : dash.data && (
           <>
@@ -77,13 +81,13 @@ export function FounderCampaigns() {
       </div>
       {list.isLoading && <SkelRows n={4} />}
       {list.error && <ErrorBox error={list.error} retry={() => list.refetch()} />}
-      {list.data && own.length === 0 && <Empty title="Кампаний нет" hint="Создайте первую кампанию: 1–15 слотов, коды наград и скрининг." action={<Link href="/app/founder/campaigns/new" className="btn btn-primary btn-sm">Создать</Link>} />}
+      {list.data && own.length === 0 && <Empty title="Кампаний нет" hint="Создайте первую кампанию: 1–15 слотов, коды наград и скрининг." action={<Link href="/app/founder/campaigns/new" className="btn btn-primary btn-sm">{t('Создать')}</Link>} />}
       {own.length > 0 && (
         <div className="border border-border overflow-x-auto">
           <table className="w-full text-sm min-w-[760px]">
             <thead>
               <tr className="bg-background border-b border-border text-left">
-                {['кампания', 'статус', 'верификация', 'слоты', 'создана', ''].map((h) => <th key={h} className="label-k font-normal px-4 py-2">{h}</th>)}
+                {['кампания', 'статус', 'верификация', 'слоты', 'создана', ''].map((h) => <th key={h} className="label-k font-normal px-4 py-2">{t(h)}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -97,9 +101,9 @@ export function FounderCampaigns() {
                   <td className="px-4 py-3">
                     <div className="flex gap-1 justify-end">
                       <button className="btn btn-sm" onClick={() => setEditing(c)} data-testid={`button-edit-${c.id}`}><Pencil className="w-3 h-3" /></button>
-                      {c.status === 'active' && <button className="btn btn-sm" disabled={upd.isPending} onClick={() => setStatus(c, 'paused')} data-testid={`button-pause-${c.id}`}><Pause className="w-3 h-3" /> Пауза</button>}
-                      {c.status === 'paused' && <button className="btn btn-sm" disabled={upd.isPending} onClick={() => setStatus(c, 'active')} data-testid={`button-resume-${c.id}`}><Play className="w-3 h-3" /> Запустить</button>}
-                      {c.status !== 'completed' && <button className="btn btn-sm" disabled={upd.isPending} onClick={() => setStatus(c, 'completed')} data-testid={`button-complete-${c.id}`}>Завершить</button>}
+                      {c.status === 'active' && <button className="btn btn-sm" disabled={upd.isPending} onClick={() => setStatus(c, 'paused')} data-testid={`button-pause-${c.id}`}><Pause className="w-3 h-3" /> {t('Пауза')}</button>}
+                      {c.status === 'paused' && <button className="btn btn-sm" disabled={upd.isPending} onClick={() => setStatus(c, 'active')} data-testid={`button-resume-${c.id}`}><Play className="w-3 h-3" /> {t('Запустить')}</button>}
+                      {c.status !== 'completed' && <button className="btn btn-sm" disabled={upd.isPending} onClick={() => setStatus(c, 'completed')} data-testid={`button-complete-${c.id}`}>{t('Завершить')}</button>}
                       <button className="btn btn-sm btn-danger" onClick={() => setDeleting(c)} data-testid={`button-delete-${c.id}`}><Trash2 className="w-3 h-3" /></button>
                     </div>
                   </td>
@@ -111,11 +115,11 @@ export function FounderCampaigns() {
       )}
       {editing && <EditModal c={editing} onClose={() => setEditing(null)} />}
       <Modal open={!!deleting} onClose={() => setDeleting(null)} title="Удалить кампанию">
-        <p className="text-sm">Кампания <span className="font-semibold">{deleting?.title}</span> будет удалена вместе со связанными данными.</p>
+        <p className="text-sm">{t('Кампания «{title}» будет удалена вместе со связанными данными.', { title: deleting?.title ?? '' })}</p>
         <InlineError error={del.error} />
         <div className="flex gap-2 justify-end mt-4">
-          <button className="btn" onClick={() => setDeleting(null)}>Отмена</button>
-          <button className="btn btn-danger" disabled={del.isPending} onClick={() => deleting && del.mutate({ id: deleting.id }, { onSuccess: () => { invalidateAll(qc); toast({ title: 'Кампания удалена' }); setDeleting(null); } })} data-testid="button-confirm-delete">Удалить</button>
+          <button className="btn" onClick={() => setDeleting(null)}>{t('Отмена')}</button>
+          <button className="btn btn-danger" disabled={del.isPending} onClick={() => deleting && del.mutate({ id: deleting.id }, { onSuccess: () => { invalidateAll(qc); toast({ title: t('Кампания удалена') }); setDeleting(null); } })} data-testid="button-confirm-delete">{t('Удалить')}</button>
         </div>
       </Modal>
     </Page>
@@ -123,6 +127,7 @@ export function FounderCampaigns() {
 }
 
 export function NewCampaign() {
+  const { t } = useLocale();
   const qc = useQueryClient();
   const { toast } = useToast();
   const [, nav] = useLocation();
@@ -145,14 +150,14 @@ export function NewCampaign() {
   if (!(f.slots >= 1 && f.slots <= 15)) errs.slots = '1–15';
   if (!(f.minTrust >= 0 && f.minTrust <= 100)) errs.minTrust = '0–100';
   if (qs.some((q) => q.length < 3)) errs.questions = 'каждый вопрос мин. 3 символа';
-  if (codes.length < f.slots) errs.rewardCodes = `нужно не меньше ${f.slots} кодов, сейчас ${codes.length}`;
+  if (codes.length < f.slots) errs.rewardCodes = t('нужно не меньше {count} кодов, сейчас {current}', { count: f.slots, current: codes.length });
   if (codes.length > 15) errs.rewardCodes = 'максимум 15 кодов';
   if (new Set(codes).size !== codes.length) errs.rewardCodes = 'коды должны быть уникальными';
   if (f.method === 'secret_code' && f.secretCode.trim().length < 4) errs.secretCode = 'не менее 4 символов';
   if (tags.length > 8) errs.tags = 'максимум 8 тегов';
   const [touched, setTouched] = useState(false);
   const ok = Object.keys(errs).length === 0;
-  const e = (k: string) => (touched ? errs[k] : undefined);
+  const e = (k: string) => (touched && errs[k] ? t(errs[k]) : undefined);
 
   return (
     <Page>
@@ -165,13 +170,13 @@ export function NewCampaign() {
           if (!ok) return;
           create.mutate(
             { data: { title: f.title.trim(), company: f.company.trim(), description: f.description.trim(), category: f.category, tags, reward: f.reward.trim(), method: f.method, slots: f.slots, instructions: f.instructions.trim(), productUrl: f.productUrl.trim(), screeningQuestions: qs, minTrust: f.minTrust, autoApprove: f.autoApprove, ...(f.method === 'secret_code' ? { secretCode: f.secretCode.trim() } : {}), rewardCodes: codes } },
-            { onSuccess: (c) => { invalidateAll(qc); toast({ title: 'Кампания опубликована' }); nav(`/app/campaigns/${c.id}`); } },
+            { onSuccess: (c) => { invalidateAll(qc); toast({ title: t('Кампания опубликована') }); nav(`/app/campaigns/${c.id}`); } },
           );
         }}
       >
         <div className="flex flex-col gap-6">
           <section className="panel p-5 flex flex-col gap-4">
-            <div className="label-k">01 / продукт</div>
+            <div className="label-k">{t('01 / продукт')}</div>
             <div className="grid sm:grid-cols-2 gap-3">
               <Field label="Название кампании" error={e('title')}><input className="inp" maxLength={120} value={f.title} onChange={(x) => setF({ ...f, title: x.target.value })} data-testid="input-title" /></Field>
               <Field label="Компания" error={e('company')}><input className="inp" maxLength={80} value={f.company} onChange={(x) => setF({ ...f, company: x.target.value })} data-testid="input-company" /></Field>
@@ -183,19 +188,19 @@ export function NewCampaign() {
             <Field label="Инструкции для тестера" error={e('instructions')}><textarea className="inp mono text-[12px]" rows={6} maxLength={10000} value={f.instructions} onChange={(x) => setF({ ...f, instructions: x.target.value })} data-testid="input-instructions" /></Field>
           </section>
           <section className="panel p-5 flex flex-col gap-4">
-            <div className="label-k">02 / скрининг</div>
+            <div className="label-k">{t('02 / скрининг')}</div>
             {f.questions.map((q, i) => (
               <div key={i} className="flex gap-2">
                 <span className="mono text-xs text-muted-foreground pt-2 w-4">{i + 1}</span>
-                <input className="inp" maxLength={250} value={q} onChange={(x) => setF({ ...f, questions: f.questions.map((y, j) => (j === i ? x.target.value : y)) })} placeholder="Какой у вас опыт с ...?" data-testid={`input-question-${i}`} />
+                <input className="inp" maxLength={250} value={q} onChange={(x) => setF({ ...f, questions: f.questions.map((y, j) => (j === i ? x.target.value : y)) })} placeholder={t('Какой у вас опыт с ...?')} data-testid={`input-question-${i}`} />
                 {f.questions.length > 1 && <button type="button" className="btn btn-sm h-8" onClick={() => setF({ ...f, questions: f.questions.filter((_, j) => j !== i) })}><Trash2 className="w-3 h-3" /></button>}
               </div>
             ))}
             {e('questions') && <span className="text-[11px] mono text-destructive">{e('questions')}</span>}
-            {f.questions.length < 3 && <button type="button" className="btn btn-sm self-start" onClick={() => setF({ ...f, questions: [...f.questions, ''] })} data-testid="button-add-question"><Plus className="w-3 h-3" /> Вопрос</button>}
+            {f.questions.length < 3 && <button type="button" className="btn btn-sm self-start" onClick={() => setF({ ...f, questions: [...f.questions, ''] })} data-testid="button-add-question"><Plus className="w-3 h-3" /> {t('Вопрос')}</button>}
           </section>
           <section className="panel p-5 flex flex-col gap-4">
-            <div className="label-k">03 / верификация и награды</div>
+            <div className="label-k">{t('03 / верификация и награды')}</div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border border border-border">
               {(['secret_code', 'email_match', 'media'] as CampaignInputMethod[]).map((m) => (
                 <button type="button" key={m} onClick={() => setF({ ...f, method: m })} className={`p-3 text-left transition-colors ${f.method === m ? 'bg-accent' : 'bg-surface hover:bg-muted'}`} data-testid={`button-method-${m}`}>
@@ -203,11 +208,11 @@ export function NewCampaign() {
                   <div className="text-xs mt-1">{METHOD_LABEL[m]}</div>
                 </button>
               ))}
-              <div className="p-3 bg-background opacity-60 cursor-not-allowed"><div className="mono text-[11px]">webhook</div><div className="text-xs mt-1">не подключено</div></div>
+              <div className="p-3 bg-background opacity-60 cursor-not-allowed"><div className="mono text-[11px]">webhook</div><div className="text-xs mt-1">{t('не подключено')}</div></div>
             </div>
             {f.method === 'secret_code' && <Field label="Секретный код" hint="тестер найдёт его в продукте" error={e('secretCode')}><input className="inp mono" maxLength={120} value={f.secretCode} onChange={(x) => setF({ ...f, secretCode: x.target.value })} data-testid="input-secret-code" /></Field>}
-            <Field label="Награда" error={e('reward')}><input className="inp" maxLength={150} value={f.reward} onChange={(x) => setF({ ...f, reward: x.target.value })} placeholder="Pro-лицензия на 12 месяцев" data-testid="input-reward" /></Field>
-            <Field label="Коды наград" hint={`по одному в строке / ${codes.length} шт.`} error={e('rewardCodes')}><textarea className="inp mono text-[12px]" rows={5} value={f.rewardCodes} onChange={(x) => setF({ ...f, rewardCodes: x.target.value })} data-testid="input-reward-codes" /></Field>
+            <Field label="Награда" error={e('reward')}><input className="inp" maxLength={150} value={f.reward} onChange={(x) => setF({ ...f, reward: x.target.value })} placeholder={t('Pro-лицензия на 12 месяцев')} data-testid="input-reward" /></Field>
+            <Field label="Коды наград" hint={t('по одному в строке / {count} шт.', { count: codes.length })} error={e('rewardCodes')}><textarea className="inp mono text-[12px]" rows={5} value={f.rewardCodes} onChange={(x) => setF({ ...f, rewardCodes: x.target.value })} data-testid="input-reward-codes" /></Field>
           </section>
         </div>
         <aside className="flex flex-col gap-4 lg:sticky lg:top-16 self-start">
@@ -219,13 +224,13 @@ export function NewCampaign() {
               </div>
             </Field>
             <Field label="Мин. trust score" hint="0–100" error={e('minTrust')}><input type="number" min={0} max={100} className="inp mono" value={f.minTrust} onChange={(x) => setF({ ...f, minTrust: Number(x.target.value) })} data-testid="input-min-trust" /></Field>
-            <label className="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={f.autoApprove} onChange={(x) => setF({ ...f, autoApprove: x.target.checked })} className="accent-[hsl(var(--primary))]" data-testid="checkbox-auto-approve" /> Автоодобрение заявок</label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={f.autoApprove} onChange={(x) => setF({ ...f, autoApprove: x.target.checked })} className="accent-[hsl(var(--primary))]" data-testid="checkbox-auto-approve" /> {t('Автоодобрение заявок')}</label>
           </div>
           <div className="panel p-4 flex flex-col gap-2">
-            <div className="label-k">проверка</div>
-            <div className="meta">{ok ? <span className="text-live">все поля валидны</span> : `${Object.keys(errs).length} полей требуют внимания`}</div>
+            <div className="label-k">{t('проверка')}</div>
+            <div className="meta">{ok ? <span className="text-live">{t('все поля валидны')}</span> : t('{count} полей требуют внимания', { count: Object.keys(errs).length })}</div>
             <InlineError error={create.error} />
-            <button className="btn btn-primary w-full" disabled={create.isPending} data-testid="button-create-campaign">{create.isPending ? 'Публикация...' : 'Опубликовать'}</button>
+            <button className="btn btn-primary w-full" disabled={create.isPending} data-testid="button-create-campaign">{t(create.isPending ? 'Публикация...' : 'Опубликовать')}</button>
           </div>
         </aside>
       </form>
@@ -234,14 +239,15 @@ export function NewCampaign() {
 }
 
 function ReasonModal({ title, onClose, onConfirm, pending, error, requireReason }: { title: string; onClose: () => void; onConfirm: (r: string) => void; pending: boolean; error: unknown; requireReason: boolean }) {
+  const { t } = useLocale();
   const [r, setR] = useState('');
   return (
     <Modal open onClose={onClose} title={title}>
       <Field label="Причина" hint={requireReason ? 'обязательно' : 'необязательно'}><textarea className="inp" rows={4} maxLength={2000} value={r} onChange={(e) => setR(e.target.value)} data-testid="input-reason" /></Field>
       <div className="mt-3"><InlineError error={error} /></div>
       <div className="flex gap-2 justify-end mt-4">
-        <button className="btn" onClick={onClose}>Отмена</button>
-        <button className="btn btn-danger" disabled={pending || (requireReason && r.trim().length < 3)} onClick={() => onConfirm(r.trim())} data-testid="button-confirm-reject">Отклонить</button>
+        <button className="btn" onClick={onClose}>{t('Отмена')}</button>
+        <button className="btn btn-danger" disabled={pending || (requireReason && r.trim().length < 3)} onClick={() => onConfirm(r.trim())} data-testid="button-confirm-reject">{t('Отклонить')}</button>
       </div>
     </Modal>
   );
@@ -254,6 +260,7 @@ function csvEscape(v: string) {
 }
 
 export function FounderSubmissions() {
+  const { t } = useLocale();
   const { signedIn } = useSignedIn();
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -265,15 +272,15 @@ export function FounderSubmissions() {
   const revS = useReviewSubmission();
   const [rejectA, setRejectA] = useState<number | null>(null);
   const [rejectS, setRejectS] = useState<number | null>(null);
-  const done = (t: string) => () => { invalidateAll(qc); toast({ title: t }); setRejectA(null); setRejectS(null); };
-  const errT = (e: unknown) => toast({ title: 'Ошибка', description: (e as { data?: { error?: string } })?.data?.error ?? String(e), variant: 'destructive' });
+  const done = (message: string) => () => { invalidateAll(qc); toast({ title: t(message) }); setRejectA(null); setRejectS(null); };
+  const errT = (e: unknown) => toast({ title: t('Ошибка'), description: errMsg(e), variant: 'destructive' });
   const reviewApp = (id: number, decision: ReviewInputDecision, reason?: string) => revA.mutate({ id, data: { decision, ...(reason ? { reason } : {}) } }, { onSuccess: done(decision === 'approved' ? 'Заявка одобрена' : 'Заявка отклонена'), onError: errT });
   const reviewSub = (id: number, decision: ReviewInputDecision, reason?: string) => revS.mutate({ id, data: { decision, ...(reason ? { reason } : {}) } }, { onSuccess: done(decision === 'approved' ? 'Отчёт одобрен, награда выдана' : 'Отчёт отклонён'), onError: errT });
 
   const exportCsv = () => {
     const rows = subs.data ?? [];
-    const head = ['id', 'campaign', 'tester', 'title', 'severity', 'status', 'reason', 'accountEmail', 'mediaUrl', 'createdAt', 'content'];
-    const body = rows.map((s) => [s.id, s.campaignTitle, s.username, s.title, s.severity, s.status, s.reason, s.accountEmail, s.mediaUrl, s.createdAt, s.content].map((v) => csvEscape(String(v))).join(','));
+    const head = ['ID', 'Кампания', 'Тестер', 'Заголовок отчёта', 'Серьёзность', 'Статус', 'Причина', 'Email аккаунта в продукте', 'Ссылка на запись или скриншот', 'Дата создания', 'Содержание'].map((key) => csvEscape(t(key)));
+    const body = rows.map((s) => [s.id, s.campaignTitle, s.username, s.title, t(severitySource[s.severity] ?? s.severity), APP_STATUS[s.status]?.label ?? s.status, s.reason, s.accountEmail, s.mediaUrl, fmtDateTime(s.createdAt), s.content].map((v) => csvEscape(String(v))).join(','));
     const blob = new Blob(['\uFEFF' + [head.join(','), ...body].join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -289,17 +296,17 @@ export function FounderSubmissions() {
 
   return (
     <Page wide>
-      <PageHead k="фаундер / ревью" title="Заявки и отчёты" right={<button className="btn" onClick={exportCsv} disabled={!subs.data?.length} data-testid="button-export-csv"><Download className="w-3.5 h-3.5" /> Экспорт CSV</button>} />
+      <PageHead k="фаундер / ревью" title="Заявки и отчёты" right={<button className="btn" onClick={exportCsv} disabled={!subs.data?.length} data-testid="button-export-csv"><Download className="w-3.5 h-3.5" /> {t('Экспорт CSV')}</button>} />
       <div className="flex flex-wrap gap-3 justify-between mb-4">
         <div className="flex border border-border">
           {([['apps', 'Заявки', pa], ['reports', 'Отчёты', ps]] as const).map(([k, l, n]) => (
             <button key={k} onClick={() => setTab(k)} className={`px-4 h-8 text-sm flex items-center gap-2 transition-colors ${tab === k ? 'bg-foreground text-background' : 'bg-surface hover:bg-muted'}`} data-testid={`tab-${k}`}>
-              {l} {n > 0 && <span className="mono text-[10px] px-1 bg-streak text-white">{n}</span>}
+              {t(l)} {n > 0 && <span className="mono text-[10px] px-1 bg-streak text-white">{n}</span>}
             </button>
           ))}
         </div>
         <div className="flex border border-border mono text-[11px]">
-          {(['pending', 'all'] as const).map((k) => <button key={k} onClick={() => setFilter(k)} className={`px-3 h-8 ${filter === k ? 'bg-accent text-accent-foreground' : 'bg-surface text-muted-foreground'}`} data-testid={`filter-${k}`}>{k === 'pending' ? 'ожидают' : 'все'}</button>)}
+          {(['pending', 'all'] as const).map((k) => <button key={k} onClick={() => setFilter(k)} className={`px-3 h-8 ${filter === k ? 'bg-accent text-accent-foreground' : 'bg-surface text-muted-foreground'}`} data-testid={`filter-${k}`}>{t(k === 'pending' ? 'ожидают' : 'все')}</button>)}
         </div>
       </div>
 
@@ -323,8 +330,8 @@ export function FounderSubmissions() {
                   </div>
                   {a.status === 'pending' && (
                     <div className="flex gap-2 mt-4">
-                      <button className="btn btn-sm btn-primary" disabled={revA.isPending} onClick={() => reviewApp(a.id, 'approved')} data-testid={`button-approve-application-${a.id}`}><CheckCircle2 className="w-3 h-3" /> Одобрить</button>
-                      <button className="btn btn-sm btn-danger" onClick={() => setRejectA(a.id)} data-testid={`button-reject-application-${a.id}`}><XCircle className="w-3 h-3" /> Отклонить</button>
+                      <button className="btn btn-sm btn-primary" disabled={revA.isPending} onClick={() => reviewApp(a.id, 'approved')} data-testid={`button-approve-application-${a.id}`}><CheckCircle2 className="w-3 h-3" /> {t('Одобрить')}</button>
+                      <button className="btn btn-sm btn-danger" onClick={() => setRejectA(a.id)} data-testid={`button-reject-application-${a.id}`}><XCircle className="w-3 h-3" /> {t('Отклонить')}</button>
                     </div>
                   )}
                 </div>
@@ -345,21 +352,21 @@ export function FounderSubmissions() {
                 <div key={s.id} className="bg-surface p-4 fade-up" data-testid={`row-founder-submission-${s.id}`}>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-semibold">{s.title}</span>
-                    <span className="tag" style={s.severity === 'critical' || s.severity === 'high' ? { color: 'hsl(var(--destructive))', borderColor: 'currentColor' } : undefined}>{s.severity}</span>
+                    <span className="tag" style={s.severity === 'critical' || s.severity === 'high' ? { color: 'hsl(var(--destructive))', borderColor: 'currentColor' } : undefined}>{t(severitySource[s.severity] ?? s.severity)}</span>
                     <Status s={s.status} />
                     <span className="meta ml-auto">@{s.username} / {s.campaignTitle} / {fmtDateTime(s.createdAt)}</span>
                   </div>
                   <pre className="mono text-[12px] whitespace-pre-wrap mt-3 p-3 bg-background border border-border max-h-64 overflow-auto">{s.content}</pre>
                   <div className="flex flex-wrap gap-4 mt-2 meta">
-                    {s.accountEmail && <span>email: <span className="text-foreground">{s.accountEmail}</span></span>}
-                    {s.mediaUrl && <a href={s.mediaUrl} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1">медиа <ExternalLink className="w-3 h-3" /></a>}
-                    {s.status === 'pending' && s.reviewDeadline && <span className="text-streak">проверить до {fmtDateTime(s.reviewDeadline)}</span>}
-                    {s.reason && <span>причина: {s.reason}</span>}
+                    {s.accountEmail && <span>{t('Эл. почта')}: <span className="text-foreground">{s.accountEmail}</span></span>}
+                    {s.mediaUrl && <a href={s.mediaUrl} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1">{t('медиа')} <ExternalLink className="w-3 h-3" /></a>}
+                    {s.status === 'pending' && s.reviewDeadline && <span className="text-streak">{t('проверить до {date}', { date: fmtDateTime(s.reviewDeadline) })}</span>}
+                    {s.reason && <span>{t('причина: {reason}', { reason: s.reason })}</span>}
                   </div>
                   {s.status === 'pending' && (
                     <div className="flex gap-2 mt-4">
-                      <button className="btn btn-sm btn-primary" disabled={revS.isPending} onClick={() => reviewSub(s.id, 'approved')} data-testid={`button-approve-submission-${s.id}`}><CheckCircle2 className="w-3 h-3" /> Одобрить и выдать награду</button>
-                      <button className="btn btn-sm btn-danger" onClick={() => setRejectS(s.id)} data-testid={`button-reject-submission-${s.id}`}><XCircle className="w-3 h-3" /> Отклонить</button>
+                      <button className="btn btn-sm btn-primary" disabled={revS.isPending} onClick={() => reviewSub(s.id, 'approved')} data-testid={`button-approve-submission-${s.id}`}><CheckCircle2 className="w-3 h-3" /> {t('Одобрить и выдать награду')}</button>
+                      <button className="btn btn-sm btn-danger" onClick={() => setRejectS(s.id)} data-testid={`button-reject-submission-${s.id}`}><XCircle className="w-3 h-3" /> {t('Отклонить')}</button>
                     </div>
                   )}
                 </div>

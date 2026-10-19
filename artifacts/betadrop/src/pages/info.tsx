@@ -2,15 +2,17 @@ import { Link } from 'wouter';
 import { useHealthCheck } from '@workspace/api-client-react';
 import { Page } from '@/components/shell';
 import { PageHead, Skel } from '@/components/kit';
+import { useLocale } from '@/lib/i18n';
 
 function Health() {
+  const { t } = useLocale();
   const { data, isLoading, error } = useHealthCheck();
   const ok = data?.status === 'ok';
   if (isLoading) return <Skel className="h-5 w-28" />;
   return (
     <span className="tag" style={{ color: ok ? 'hsl(var(--live))' : 'hsl(var(--destructive))', borderColor: 'currentColor' }} data-testid="status-health">
       <span className={`dot ${ok ? 'live-pulse' : ''}`} style={{ background: 'currentColor' }} />
-      API {error ? 'недоступен' : data?.status ?? '—'}
+      API {error ? t('недоступен') : data?.status === 'ok' ? t('работает') : data?.status ?? '—'}
     </span>
   );
 }
@@ -26,21 +28,22 @@ const INTEGRATIONS = [
 ];
 
 export function Integrations() {
+  const { t } = useLocale();
   return (
     <Page>
-      <PageHead k="фаундер / настройки" title="Интеграции" sub="Честный статус: что работает в текущей сборке, а что только запланировано." right={<Health />} />
+      <PageHead k={t('фаундер / настройки')} title={t('Интеграции')} sub={t('Честный статус: что работает в текущей сборке, а что только запланировано.')} right={<Health />} />
       <div className="flex flex-col gap-px bg-border border border-border">
         {INTEGRATIONS.map((i) => {
           const live = i.s !== 'запланировано';
           return (
             <div key={i.k} className="bg-surface px-4 py-4 grid md:grid-cols-[1fr_auto] gap-3 items-center" data-testid={`row-integration-${i.k}`}>
               <div>
-                <div className="flex items-center gap-2"><span className="text-sm font-medium">{i.t}</span><span className="mono text-[11px] text-muted-foreground">{i.k}</span></div>
-                <div className="text-[13px] text-muted-foreground mt-0.5">{i.d}</div>
+                <div className="flex items-center gap-2"><span className="text-sm font-medium">{t(i.t)}</span><span className="mono text-[11px] text-muted-foreground">{i.k}</span></div>
+                <div className="text-[13px] text-muted-foreground mt-0.5">{t(i.d)}</div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="tag" style={{ color: live ? 'hsl(var(--live))' : 'hsl(var(--streak))', borderColor: 'currentColor' }}>{i.s}</span>
-                {!live && <button className="btn btn-sm" disabled>Подключить</button>}
+                <span className="tag" style={{ color: live ? 'hsl(var(--live))' : 'hsl(var(--streak))', borderColor: 'currentColor' }}>{t(i.s)}</span>
+                {!live && <button className="btn btn-sm" disabled>{t('Подключить')}</button>}
               </div>
             </div>
           );
@@ -60,19 +63,20 @@ const SECTIONS = [
 ];
 
 export function Docs() {
+  const { t } = useLocale();
   return (
     <Page>
-      <PageHead k="документация" title="Ядро BETADROP" sub="Что уже работает в текущей сборке." right={<Health />} />
+      <PageHead k={t('документация')} title={t('Ядро BETADROP')} sub={t('Что уже работает в текущей сборке.')} right={<Health />} />
       <div className="grid md:grid-cols-[200px_1fr] gap-8">
         <nav className="flex md:flex-col gap-1 md:sticky md:top-16 self-start overflow-x-auto">
-          {SECTIONS.map((s, i) => <a key={s.id} href={`#${s.id}`} className="mono text-[12px] text-muted-foreground hover:text-foreground px-2 py-1 border-l border-border hover:border-primary whitespace-nowrap">{String(i + 1).padStart(2, '0')} {s.t}</a>)}
+          {SECTIONS.map((s, i) => <a key={s.id} href={`#${s.id}`} className="mono text-[12px] text-muted-foreground hover:text-foreground px-2 py-1 border-l border-border hover:border-primary whitespace-nowrap">{String(i + 1).padStart(2, '0')} {t(s.t)}</a>)}
         </nav>
         <div className="flex flex-col gap-px bg-border border border-border">
           {SECTIONS.map((s, i) => (
             <section key={s.id} id={s.id} className="bg-surface p-6 scroll-mt-16">
               <div className="label-k">{String(i + 1).padStart(2, '0')}</div>
-              <h2 className="text-lg font-semibold mt-1">{s.t}</h2>
-              <p className="text-sm leading-relaxed text-muted-foreground mt-2">{s.body}</p>
+              <h2 className="text-lg font-semibold mt-1">{t(s.t)}</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground mt-2">{t(s.body)}</p>
             </section>
           ))}
           <section className="bg-surface p-6">
@@ -82,7 +86,7 @@ export function Docs() {
 POST /api/submissions
 { "applicationId": 40, "title": "...", "content": "...",
   "severity": "high", "secretCode": "..." }`}</pre>
-            <Link href="/app/explore" className="btn btn-sm mt-4">Перейти в каталог</Link>
+            <Link href="/app/explore" className="btn btn-sm mt-4">{t('Перейти в каталог')}</Link>
           </section>
         </div>
       </div>
