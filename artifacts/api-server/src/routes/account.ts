@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { pool } from "@workspace/db";
-import { ClaimRewardParams, ClaimRewardResponse, GetActivityResponse, GetDashboardResponse, GetProfileResponse, GetStatsResponse, ListRewardsResponse, UpdateProfileBody } from "@workspace/api-zod";
+import { ClaimRewardParams, ClaimRewardResponse, GetActivityResponse, GetDashboardResponse, GetProfileResponse, GetPublicProfileParams, GetPublicProfileResponse, GetStatsResponse, ListRewardsResponse, UpdateProfileBody } from "@workspace/api-zod";
 import { check, identity, processDeadlines, profileFor, rewardSelect } from "../lib/betadrop";
 const router = Router();
 router.get("/profile", async (req, res) => {
@@ -10,6 +10,13 @@ router.patch("/profile", async (req, res) => {
   const user = await identity(req), data = UpdateProfileBody.parse(req.body);
   await pool.query("UPDATE bd_profiles SET username=$2,bio=$3,stack=$4,os=$5 WHERE id=$1", [user,data.username,data.bio,data.stack,data.os]);
   res.json(GetProfileResponse.parse(await profileFor(user)));
+});
+// Public profile: no account id, no email, only what the tester shows on the platform.
+router.get("/profiles/:username", async (req, res) => {
+  const { username } = GetPublicProfileParams.parse(req.params);
+  const { rows: [row] } = await pool.query("SELECT id FROM bd_profiles WHERE lower(username)=lower($1)", [username]);
+  check(row, "Профиль не найден", 404);
+  res.json(GetPublicProfileResponse.parse(await profileFor(row.id)));
 });
 router.get("/rewards", async (req, res) => {
   const user = await identity(req);
@@ -36,7 +43,7 @@ router.get("/dashboard", async (req, res) => {
   res.json(GetDashboardResponse.parse({...counts,profile:await profileFor(user)}));
 });
 router.get("/activity", async (_req, res) => {
-  const { rows } = await pool.query(`SELECT id,event,detail,created_at::text AS "createdAt" FROM bd_activity ORDER BY created_at DESC LIMIT 12`);
+  const { rows } = await pool.query(`SELECT id,event,regexp_replace(detail,'^(Новая заявка|Отчёт отправлен): ','') AS detail,created_at::text AS "createdAt" FROM bd_activity WHERE event IN ('campaign_deployed','application_created','report_submitted','submission_verified') ORDER BY created_at DESC LIMIT 20`);
   res.json(GetActivityResponse.parse(rows));
 });
 router.get("/stats", async (_req, res) => {

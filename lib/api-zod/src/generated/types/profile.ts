@@ -15,7 +15,12 @@ export interface Profile {
   trustScore: number;
   xp: number;
   streak: number;
+  maxStreak: number;
   freezes: number;
   badges: string[];
+  approvedReports: number;
+  videoReports: number;
   contributions: Contribution[];
+  /** @nullable */
+  createdAt: string | null;
 }

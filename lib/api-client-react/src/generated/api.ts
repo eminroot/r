@@ -20,6 +20,9 @@ import type {
 
 import type {
   Activity,
+  ApiKey,
+  ApiKeyCreated,
+  ApiKeyInput,
   Application,
   ApplicationInput,
   Campaign,
@@ -27,16 +30,21 @@ import type {
   CampaignUpdate,
   Dashboard,
   HealthStatus,
+  Integrations,
+  IntegrationsInput,
   ListApplicationsParams,
   ListCampaignsParams,
   ListSubmissionsParams,
   Profile,
   ProfileInput,
+  PublicProfile,
   ReviewInput,
   Reward,
   Stats,
   Submission,
-  SubmissionInput
+  SubmissionInput,
+  Verification,
+  VerificationInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1509,4 +1517,670 @@ export function useGetStats<TData = Awaited<ReturnType<typeof getStats>>, TError
 
 
 
+
+export const getGetPublicProfileUrl = (username: string,) => {
+
+
+
+
+  return `/api/profiles/${username}`
+}
+
+export const getPublicProfile = async (username: string, options?: Parameters<typeof customFetch>[1]): Promise<PublicProfile> => {
+
+  return customFetch<PublicProfile>(getGetPublicProfileUrl(username),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicProfileQueryKey = (username: string,) => {
+    return [
+    `/api/profiles/${username}`
+    ] as const;
+    }
+
+
+export const getGetPublicProfileQueryOptions = <TData = Awaited<ReturnType<typeof getPublicProfile>>, TError = ErrorType<unknown>>(username: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicProfileQueryKey(username);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicProfile>>> = ({ signal }) => getPublicProfile(username, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: username !== null && username !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicProfile>>>
+export type GetPublicProfileQueryError = ErrorType<unknown>
+
+
+
+export function useGetPublicProfile<TData = Awaited<ReturnType<typeof getPublicProfile>>, TError = ErrorType<unknown>>(
+ username: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicProfileQueryOptions(username,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetIntegrationsUrl = () => {
+
+
+
+
+  return `/api/integrations`
+}
+
+export const getIntegrations = async ( options?: Parameters<typeof customFetch>[1]): Promise<Integrations> => {
+
+  return customFetch<Integrations>(getGetIntegrationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetIntegrationsQueryKey = () => {
+    return [
+    `/api/integrations`
+    ] as const;
+    }
+
+
+export const getGetIntegrationsQueryOptions = <TData = Awaited<ReturnType<typeof getIntegrations>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetIntegrationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIntegrations>>> = ({ signal }) => getIntegrations({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetIntegrationsQueryResult = NonNullable<Awaited<ReturnType<typeof getIntegrations>>>
+export type GetIntegrationsQueryError = ErrorType<unknown>
+
+
+
+export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrations>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetIntegrationsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateIntegrationsUrl = () => {
+
+
+
+
+  return `/api/integrations`
+}
+
+export const updateIntegrations = async (integrationsInput: IntegrationsInput, options?: Parameters<typeof customFetch>[1]): Promise<Integrations> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Integrations>(getUpdateIntegrationsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(integrationsInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateIntegrationsMutationKey = () => ['updateIntegrations'] as const;
+
+export const getUpdateIntegrationsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateIntegrations>>, TError,UpdateIntegrationsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateIntegrations>>, TError,UpdateIntegrationsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateIntegrationsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateIntegrations>>, UpdateIntegrationsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateIntegrations(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateIntegrationsMutationResult = NonNullable<Awaited<ReturnType<typeof updateIntegrations>>>
+    export type UpdateIntegrationsMutationBody = BodyType<IntegrationsInput>
+    export type UpdateIntegrationsMutationError = ErrorType<unknown>
+    export type UpdateIntegrationsMutationVariables = {data: BodyType<IntegrationsInput>}
+
+    export const useUpdateIntegrations = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateIntegrations>>, TError,UpdateIntegrationsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateIntegrations>>,
+        TError,
+        UpdateIntegrationsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateIntegrationsMutationOptions(options));
+    }
+
+export const getTestWebhookUrl = () => {
+
+
+
+
+  return `/api/integrations/webhook/test`
+}
+
+export const testWebhook = async ( options?: Parameters<typeof customFetch>[1]): Promise<Integrations> => {
+
+  return customFetch<Integrations>(getTestWebhookUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getTestWebhookMutationKey = () => ['testWebhook'] as const;
+
+export const getTestWebhookMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testWebhook>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof testWebhook>>, TError,void, TContext> => {
+
+const mutationKey = getTestWebhookMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof testWebhook>>, void> = () => {
+
+
+          return  testWebhook(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TestWebhookMutationResult = NonNullable<Awaited<ReturnType<typeof testWebhook>>>
+
+    export type TestWebhookMutationError = ErrorType<unknown>
+
+
+    export const useTestWebhook = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testWebhook>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof testWebhook>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getTestWebhookMutationOptions(options));
+    }
+
+export const getRotateWebhookSecretUrl = () => {
+
+
+
+
+  return `/api/integrations/webhook/rotate`
+}
+
+export const rotateWebhookSecret = async ( options?: Parameters<typeof customFetch>[1]): Promise<Integrations> => {
+
+  return customFetch<Integrations>(getRotateWebhookSecretUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRotateWebhookSecretMutationKey = () => ['rotateWebhookSecret'] as const;
+
+export const getRotateWebhookSecretMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rotateWebhookSecret>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rotateWebhookSecret>>, TError,void, TContext> => {
+
+const mutationKey = getRotateWebhookSecretMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rotateWebhookSecret>>, void> = () => {
+
+
+          return  rotateWebhookSecret(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RotateWebhookSecretMutationResult = NonNullable<Awaited<ReturnType<typeof rotateWebhookSecret>>>
+
+    export type RotateWebhookSecretMutationError = ErrorType<unknown>
+
+
+    export const useRotateWebhookSecret = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rotateWebhookSecret>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof rotateWebhookSecret>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRotateWebhookSecretMutationOptions(options));
+    }
+
+export const getListApiKeysUrl = () => {
+
+
+
+
+  return `/api/api-keys`
+}
+
+export const listApiKeys = async ( options?: Parameters<typeof customFetch>[1]): Promise<ApiKey[]> => {
+
+  return customFetch<ApiKey[]>(getListApiKeysUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListApiKeysQueryKey = () => {
+    return [
+    `/api/api-keys`
+    ] as const;
+    }
+
+
+export const getListApiKeysQueryOptions = <TData = Awaited<ReturnType<typeof listApiKeys>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listApiKeys>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListApiKeysQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listApiKeys>>> = ({ signal }) => listApiKeys({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listApiKeys>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListApiKeysQueryResult = NonNullable<Awaited<ReturnType<typeof listApiKeys>>>
+export type ListApiKeysQueryError = ErrorType<unknown>
+
+
+
+export function useListApiKeys<TData = Awaited<ReturnType<typeof listApiKeys>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listApiKeys>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListApiKeysQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateApiKeyUrl = () => {
+
+
+
+
+  return `/api/api-keys`
+}
+
+export const createApiKey = async (apiKeyInput: ApiKeyInput, options?: Parameters<typeof customFetch>[1]): Promise<ApiKeyCreated> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ApiKeyCreated>(getCreateApiKeyUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(apiKeyInput)
+  }
+);}
+
+
+
+
+
+export const getCreateApiKeyMutationKey = () => ['createApiKey'] as const;
+
+export const getCreateApiKeyMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createApiKey>>, TError,CreateApiKeyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createApiKey>>, TError,CreateApiKeyMutationVariables, TContext> => {
+
+const mutationKey = getCreateApiKeyMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createApiKey>>, CreateApiKeyMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createApiKey(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateApiKeyMutationResult = NonNullable<Awaited<ReturnType<typeof createApiKey>>>
+    export type CreateApiKeyMutationBody = BodyType<ApiKeyInput>
+    export type CreateApiKeyMutationError = ErrorType<unknown>
+    export type CreateApiKeyMutationVariables = {data: BodyType<ApiKeyInput>}
+
+    export const useCreateApiKey = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createApiKey>>, TError,CreateApiKeyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createApiKey>>,
+        TError,
+        CreateApiKeyMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateApiKeyMutationOptions(options));
+    }
+
+export const getRevokeApiKeyUrl = (id: number,) => {
+
+
+
+
+  return `/api/api-keys/${id}`
+}
+
+export const revokeApiKey = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getRevokeApiKeyUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRevokeApiKeyMutationKey = () => ['revokeApiKey'] as const;
+
+export const getRevokeApiKeyMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeApiKey>>, TError,RevokeApiKeyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof revokeApiKey>>, TError,RevokeApiKeyMutationVariables, TContext> => {
+
+const mutationKey = getRevokeApiKeyMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof revokeApiKey>>, RevokeApiKeyMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  revokeApiKey(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RevokeApiKeyMutationResult = NonNullable<Awaited<ReturnType<typeof revokeApiKey>>>
+
+    export type RevokeApiKeyMutationError = ErrorType<unknown>
+    export type RevokeApiKeyMutationVariables = {id: number}
+
+    export const useRevokeApiKey = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof revokeApiKey>>, TError,RevokeApiKeyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof revokeApiKey>>,
+        TError,
+        RevokeApiKeyMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRevokeApiKeyMutationOptions(options));
+    }
+
+export const getCreateVerificationUrl = () => {
+
+
+
+
+  return `/api/v1/verifications`
+}
+
+/**
+ * Called by a founder's backend with an API key (Authorization Bearer) when a tester finishes the target action.
+ */
+export const createVerification = async (verificationInput: VerificationInput, options?: Parameters<typeof customFetch>[1]): Promise<Verification> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Verification>(getCreateVerificationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(verificationInput)
+  }
+);}
+
+
+
+
+
+export const getCreateVerificationMutationKey = () => ['createVerification'] as const;
+
+export const getCreateVerificationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVerification>>, TError,CreateVerificationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createVerification>>, TError,CreateVerificationMutationVariables, TContext> => {
+
+const mutationKey = getCreateVerificationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createVerification>>, CreateVerificationMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createVerification(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateVerificationMutationResult = NonNullable<Awaited<ReturnType<typeof createVerification>>>
+    export type CreateVerificationMutationBody = BodyType<VerificationInput>
+    export type CreateVerificationMutationError = ErrorType<unknown>
+    export type CreateVerificationMutationVariables = {data: BodyType<VerificationInput>}
+
+    export const useCreateVerification = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVerification>>, TError,CreateVerificationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createVerification>>,
+        TError,
+        CreateVerificationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateVerificationMutationOptions(options));
+    }
 

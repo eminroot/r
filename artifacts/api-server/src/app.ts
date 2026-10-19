@@ -1,4 +1,4 @@
-import express, { type Express, type ErrorRequestHandler } from "express";
+import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -6,7 +6,7 @@ import { logger } from "./lib/logger";
 import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 import { CLERK_PROXY_PATH, clerkProxyMiddleware, getClerkProxyHost } from "./middlewares/clerkProxyMiddleware";
-import { HttpError } from "./lib/betadrop";
+import { errorHandler } from "./lib/errors";
 
 const app: Express = express();
 
@@ -45,13 +45,7 @@ app.use("/api", (req, res, next) => {
 });
 
 app.use("/api", router);
-const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
-  if (err instanceof HttpError) { res.status(err.status).json({error:err.message}); return; }
-  if (err?.name === "ZodError") { res.status(400).json({error:"Проверьте обязательные поля и допустимые значения", details:err.issues?.map((i: {path: unknown[];message:string}) => ({path:i.path,message:i.message}))}); return; }
-  if (err?.code === "23505") { res.status(409).json({error:"Такая запись уже существует. Проверьте имя профиля или заявку."}); return; }
-  req.log.error({err}, "Request failed");
-  res.status(500).json({error:"Ошибка сервера. Повторите позже."});
-};
+app.use("/api", (_req, res) => { res.status(404).json({ error: "Not found" }); });
 app.use(errorHandler);
 
 export default app;

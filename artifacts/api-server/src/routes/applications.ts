@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { pool } from "@workspace/db";
 import { ApplyCampaignBody, ApplyCampaignResponse, ListApplicationsQueryParams, ListApplicationsResponse, ReviewApplicationBody, ReviewApplicationParams } from "@workspace/api-zod";
-import { applicationSelect, check, event, identity, processDeadlines, transaction } from "../lib/betadrop";
+import { applicationSelect, check, event, EXECUTION_WINDOW, identity, processDeadlines, transaction } from "../lib/betadrop";
+import { deliver } from "../lib/webhooks";
 const router = Router();
 router.get("/applications", async (req, res) => {
   const user = await identity(req), q = ListApplicationsQueryParams.parse(req.query);
@@ -22,13 +23,16 @@ router.post("/applications", async (req, res) => {
     check(p.trust_score >= c.min_trust, "Недостаточный Trust Score", 403);
     const { rows: [prior] } = await client.query("SELECT id FROM bd_applications WHERE campaign_id=$1 AND user_id=$2", [c.id,user]);
     check(!prior, "Вы уже подали заявку", 409);
+    // Auto-approve only testers who pass the campaign's Trust Score filter; the rest wait for manual review.
+    const auto = c.auto_approve && p.trust_score >= c.auto_approve_trust;
     const { rows: [a] } = await client.query("INSERT INTO bd_applications(campaign_id,user_id,answers,status,deadline) VALUES($1,$2,$3,$4,$5) RETURNING id",
-      [c.id,user,data.answers,c.auto_approve ? "approved" : "pending",c.auto_approve ? new Date(Date.now()+48*3600000) : null]);
-    if (c.auto_approve) await client.query("UPDATE bd_campaigns SET filled_slots=filled_slots+1 WHERE id=$1", [c.id]);
-    await event(client, user, "application_created", `Новая заявка: ${c.title}`);
-    return (await client.query(`${applicationSelect} WHERE a.id=$1`, [a.id])).rows[0];
+      [c.id,user,data.answers,auto ? "approved" : "pending",auto ? new Date(Date.now()+EXECUTION_WINDOW) : null]);
+    if (auto) await client.query("UPDATE bd_campaigns SET filled_slots=filled_slots+1 WHERE id=$1", [c.id]);
+    await event(client, user, "application_created", c.title);
+    return { owner: c.owner_id as string, row: (await client.query(`${applicationSelect} WHERE a.id=$1`, [a.id])).rows[0] };
   });
-  res.status(201).json(ApplyCampaignResponse.parse(result));
+  void deliver(result.owner, "application.created", { applicationId: result.row.id, campaignId: result.row.campaignId, betadropId: result.row.userId, username: result.row.username, status: result.row.status });
+  res.status(201).json(ApplyCampaignResponse.parse(result.row));
 });
 router.post("/applications/:id/review", async (req, res) => {
   const user = await identity(req), { id } = ReviewApplicationParams.parse(req.params), data = ReviewApplicationBody.parse(req.body);
@@ -40,7 +44,7 @@ router.post("/applications/:id/review", async (req, res) => {
       check(a.campaign_status === "active" && a.filled_slots < a.slots, "Набор закрыт или места закончились", 409);
       await client.query("UPDATE bd_campaigns SET filled_slots=filled_slots+1 WHERE id=$1", [a.campaign_id]);
     }
-    await client.query("UPDATE bd_applications SET status=$2,deadline=$3 WHERE id=$1", [id,data.decision,data.decision === "approved" ? new Date(Date.now()+48*3600000) : null]);
+    await client.query("UPDATE bd_applications SET status=$2,deadline=$3 WHERE id=$1", [id,data.decision,data.decision === "approved" ? new Date(Date.now()+EXECUTION_WINDOW) : null]);
     return (await client.query(`${applicationSelect} WHERE a.id=$1`, [id])).rows[0];
   });
   res.json(ApplyCampaignResponse.parse(result));

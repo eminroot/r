@@ -12,11 +12,14 @@ export interface Application {
   campaignTitle: string;
   userId: string;
   username: string;
+  trustScore: number;
   answers: string[];
   status: ApplicationStatus;
   createdAt: string;
   /** @nullable */
   deadline: string | null;
+  /** @nullable */
+  verifiedAt: string | null;
   productUrl: string;
   method: string;
   reward: string;

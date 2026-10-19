@@ -31,10 +31,12 @@ export interface Campaign {
   id: number;
   title: string;
   company: string;
+  logoUrl?: string;
   description: string;
   category: string;
   tags: string[];
   reward: string;
+  rewardValue: number;
   method: CampaignMethod;
   slots: number;
   filledSlots: number;
@@ -45,6 +47,7 @@ export interface Campaign {
   screeningQuestions: string[];
   minTrust: number;
   autoApprove: boolean;
+  autoApproveTrust: number;
   featured: boolean;
   demo: boolean;
   ownerId: string;
@@ -68,6 +71,7 @@ export const CampaignInputMethod = {
   secret_code: 'secret_code',
   email_match: 'email_match',
   media: 'media',
+  webhook: 'webhook',
 } as const;
 
 export interface CampaignInput {
@@ -81,6 +85,8 @@ export interface CampaignInput {
      * @maxLength 80
      */
   company: string;
+  /** @maxLength 2048 */
+  logoUrl?: string;
   /**
      * @minLength 20
      * @maxLength 5000
@@ -97,6 +103,11 @@ export interface CampaignInput {
      * @maxLength 150
      */
   reward: string;
+  /**
+     * @minimum 0
+     * @maximum 100000
+     */
+  rewardValue?: number;
   method: CampaignInputMethod;
   /**
      * @minimum 1
@@ -122,6 +133,11 @@ export interface CampaignInput {
      */
   minTrust: number;
   autoApprove: boolean;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  autoApproveTrust?: number;
   /** @maxLength 120 */
   secretCode?: string;
   /**
@@ -143,6 +159,8 @@ export const CampaignUpdateStatus = {
 } as const;
 
 export interface CampaignUpdate {
+  /** @maxLength 2048 */
+  logoUrl?: string;
   /**
      * @minLength 3
      * @maxLength 120
@@ -190,11 +208,14 @@ export interface Application {
   campaignTitle: string;
   userId: string;
   username: string;
+  trustScore: number;
   answers: string[];
   status: ApplicationStatus;
   createdAt: string;
   /** @nullable */
   deadline: string | null;
+  /** @nullable */
+  verifiedAt: string | null;
   productUrl: string;
   method: string;
   reward: string;
@@ -254,6 +275,7 @@ export const SubmissionStatus = {
 export interface Submission {
   id: number;
   applicationId: number;
+  campaignId: number;
   campaignTitle: string;
   username: string;
   title: string;
@@ -309,9 +331,32 @@ export interface Profile {
   trustScore: number;
   xp: number;
   streak: number;
+  maxStreak: number;
   freezes: number;
   badges: string[];
+  approvedReports: number;
+  videoReports: number;
   contributions: Contribution[];
+  /** @nullable */
+  createdAt: string | null;
+}
+
+export interface PublicProfile {
+  username: string;
+  bio: string;
+  stack: string[];
+  os: string;
+  trustScore: number;
+  xp: number;
+  streak: number;
+  maxStreak: number;
+  freezes: number;
+  badges: string[];
+  approvedReports: number;
+  videoReports: number;
+  contributions: Contribution[];
+  /** @nullable */
+  createdAt: string | null;
 }
 
 export interface Dashboard {
@@ -337,6 +382,67 @@ export interface Stats {
   testers: number;
   verifiedReports: number;
   availableSlots: number;
+}
+
+export interface Integrations {
+  webhookUrl: string;
+  webhookSecret: string;
+  githubRepo: string;
+  /** @nullable */
+  lastDeliveryAt: string | null;
+  /** @nullable */
+  lastDeliveryStatus: number | null;
+  /** @nullable */
+  lastDeliveryEvent: string | null;
+}
+
+export interface IntegrationsInput {
+  /** @maxLength 2048 */
+  webhookUrl: string;
+  /** @maxLength 140 */
+  githubRepo: string;
+}
+
+export interface ApiKey {
+  id: number;
+  name: string;
+  prefix: string;
+  createdAt: string;
+  /** @nullable */
+  lastUsedAt: string | null;
+}
+
+export interface ApiKeyInput {
+  /**
+     * @minLength 2
+     * @maxLength 60
+     */
+  name: string;
+}
+
+export interface ApiKeyCreated {
+  id: number;
+  name: string;
+  prefix: string;
+  createdAt: string;
+  /** @nullable */
+  lastUsedAt: string | null;
+  token: string;
+}
+
+export interface VerificationInput {
+  campaignId: number;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  betadropId: string;
+}
+
+export interface Verification {
+  applicationId: number;
+  status: string;
+  verifiedAt: string;
 }
 
 export type ListCampaignsParams = {

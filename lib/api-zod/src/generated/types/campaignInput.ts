@@ -18,6 +18,8 @@ export interface CampaignInput {
      * @maxLength 80
      */
   company: string;
+  /** @maxLength 2048 */
+  logoUrl?: string;
   /**
      * @minLength 20
      * @maxLength 5000
@@ -34,6 +36,11 @@ export interface CampaignInput {
      * @maxLength 150
      */
   reward: string;
+  /**
+     * @minimum 0
+     * @maximum 100000
+     */
+  rewardValue?: number;
   method: CampaignInputMethod;
   /**
      * @minimum 1
@@ -59,6 +66,11 @@ export interface CampaignInput {
      */
   minTrust: number;
   autoApprove: boolean;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  autoApproveTrust?: number;
   /** @maxLength 120 */
   secretCode?: string;
   /**

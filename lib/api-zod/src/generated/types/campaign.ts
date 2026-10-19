@@ -11,10 +11,12 @@ export interface Campaign {
   id: number;
   title: string;
   company: string;
+  logoUrl?: string;
   description: string;
   category: string;
   tags: string[];
   reward: string;
+  rewardValue: number;
   method: CampaignMethod;
   slots: number;
   filledSlots: number;
@@ -25,6 +27,7 @@ export interface Campaign {
   screeningQuestions: string[];
   minTrust: number;
   autoApprove: boolean;
+  autoApproveTrust: number;
   featured: boolean;
   demo: boolean;
   ownerId: string;

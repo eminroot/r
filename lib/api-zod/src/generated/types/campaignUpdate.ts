@@ -7,6 +7,8 @@
 import type { CampaignUpdateStatus } from './campaignUpdateStatus';
 
 export interface CampaignUpdate {
+  /** @maxLength 2048 */
+  logoUrl?: string;
   /**
      * @minLength 3
      * @maxLength 120

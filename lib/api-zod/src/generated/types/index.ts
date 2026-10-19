@@ -6,6 +6,9 @@
  */
 
 export * from './activity';
+export * from './apiKey';
+export * from './apiKeyCreated';
+export * from './apiKeyInput';
 export * from './application';
 export * from './applicationInput';
 export * from './applicationStatus';
@@ -20,6 +23,8 @@ export * from './campaignUpdateStatus';
 export * from './contribution';
 export * from './dashboard';
 export * from './healthStatus';
+export * from './integrations';
+export * from './integrationsInput';
 export * from './listApplicationsParams';
 export * from './listApplicationsRole';
 export * from './listCampaignsParams';
@@ -27,6 +32,7 @@ export * from './listSubmissionsParams';
 export * from './listSubmissionsRole';
 export * from './profile';
 export * from './profileInput';
+export * from './publicProfile';
 export * from './reviewInput';
 export * from './reviewInputDecision';
 export * from './reward';
@@ -35,3 +41,5 @@ export * from './submission';
 export * from './submissionInput';
 export * from './submissionInputSeverity';
 export * from './submissionStatus';
+export * from './verification';
+export * from './verificationInput';

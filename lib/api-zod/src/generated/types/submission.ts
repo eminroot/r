@@ -9,6 +9,7 @@ import type { SubmissionStatus } from './submissionStatus';
 export interface Submission {
   id: number;
   applicationId: number;
+  campaignId: number;
   campaignTitle: string;
   username: string;
   title: string;

@@ -12,4 +12,5 @@ export const CampaignInputMethod = {
   secret_code: 'secret_code',
   email_match: 'email_match',
   media: 'media',
+  webhook: 'webhook',
 } as const;

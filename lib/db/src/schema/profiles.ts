@@ -1,4 +1,4 @@
-import { pgTable, text, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp } from "drizzle-orm/pg-core";
 export const profiles = pgTable("bd_profiles", {
   id: text("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -7,4 +7,5 @@ export const profiles = pgTable("bd_profiles", {
   os: text("os").notNull().default(""),
   trustScore: integer("trust_score").notNull().default(50),
   xp: integer("xp").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });

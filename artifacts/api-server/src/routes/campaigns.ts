@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { pool } from "@workspace/db";
 import { CreateCampaignBody, UpdateCampaignBody, GetCampaignParams, GetCampaignResponse, ListCampaignsResponse, ListCampaignsQueryParams } from "@workspace/api-zod";
-import { campaignSelect, check, event, hashCode, httpUrl, identity, transaction } from "../lib/betadrop";
+import { campaignSelect, check, event, hashCode, HIGH_VALUE_REWARD, HIGH_VALUE_TRUST, httpUrl, identity, transaction } from "../lib/betadrop";
 const router = Router();
 router.get("/campaigns", async (req, res) => {
   const q = ListCampaignsQueryParams.parse({ ...req.query, mine: req.query.mine === "true" });
   const mine = q.mine ? await identity(req) : null;
-  const result = await pool.query(`${campaignSelect} WHERE ($1::text IS NULL OR owner_id=$1) AND ($2::text IS NULL OR title ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%') AND ($3::text IS NULL OR category=$3) ORDER BY featured DESC,created_at DESC LIMIT 200`, [mine, q.search || null, q.category && !["all", "Все"].includes(q.category) ? q.category : null]);
+  const result = await pool.query(`${campaignSelect} WHERE ($1::text IS NULL OR owner_id=$1) AND ($2::text IS NULL OR title ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%') AND ($3::text IS NULL OR category=$3) ORDER BY demo ASC,featured DESC,created_at DESC LIMIT 200`, [mine, q.search || null, q.category && q.category !== "all" ? q.category : null]);
   res.json(ListCampaignsResponse.parse(result.rows));
 });
 router.get("/campaigns/:id", async (req, res) => {
@@ -21,13 +21,16 @@ router.post("/campaigns", async (req, res) => {
   check(httpUrl(data.productUrl), "Укажите HTTP(S) ссылку на продукт");
   check(data.method !== "secret_code" || (data.secretCode?.trim().length ?? 0) >= 4, "Секретный код должен содержать не менее 4 символов");
   const codes = data.rewardCodes.map(c => c.trim());
+  const rewardValue = data.rewardValue ?? 0;
+  // Spec rule: rewards worth more than $50 are only open to Trust Score 80+.
+  const minTrust = rewardValue > HIGH_VALUE_REWARD ? Math.max(data.minTrust, HIGH_VALUE_TRUST) : data.minTrust;
   check(codes.every(Boolean) && new Set(codes).size === codes.length && codes.length >= data.slots, "Добавьте уникальный непустой промокод для каждого места");
   const c = await transaction(async client => {
     const { rows: [count] } = await client.query("SELECT count(*)::int AS n FROM bd_campaigns WHERE owner_id=$1 AND status='active'", [user]);
     check(count.n < 1, "Starter: одна активная кампания. Приостановите текущую.", 409);
-    const { rows: [row] } = await client.query(`INSERT INTO bd_campaigns(owner_id,title,company,description,category,tags,reward,method,slots,instructions,product_url,screening_questions,min_trust,auto_approve,secret_hash,reward_codes)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id`,
-    [user,data.title,data.company,data.description,data.category,data.tags,data.reward,data.method,data.slots,data.instructions,data.productUrl,data.screeningQuestions,data.minTrust,data.autoApprove,data.secretCode ? hashCode(data.secretCode.trim()) : null,codes]);
+    const { rows: [row] } = await client.query(`INSERT INTO bd_campaigns(owner_id,title,company,description,category,tags,reward,reward_value,method,slots,instructions,product_url,screening_questions,min_trust,auto_approve,auto_approve_trust,secret_hash,reward_codes)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
+    [user,data.title,data.company,data.description,data.category,data.tags,data.reward,rewardValue,data.method,data.slots,data.instructions,data.productUrl,data.screeningQuestions,minTrust,data.autoApprove,data.autoApproveTrust ?? 0,data.method === "secret_code" && data.secretCode ? hashCode(data.secretCode.trim()) : null,codes]);
     await event(client, user, "campaign_deployed", data.title);
     return (await client.query(`${campaignSelect} WHERE id=$1`, [row.id])).rows[0];
   });

@@ -9,4 +9,6 @@ export const applications = pgTable("bd_applications", {
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   deadline: timestamp("deadline", { withTimezone: true }),
+  // Set when the founder's backend confirms the tester via POST /api/v1/verifications.
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
 }, t => [uniqueIndex("bd_application_unique").on(t.campaignId, t.userId)]);

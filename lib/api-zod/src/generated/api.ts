@@ -22,10 +22,12 @@ export const ListCampaignsResponseItem = zod.object({
   "id": zod.number().int(),
   "title": zod.string(),
   "company": zod.string(),
+  "logoUrl": zod.string().optional(),
   "description": zod.string(),
   "category": zod.string(),
   "tags": zod.array(zod.string()),
   "reward": zod.string(),
+  "rewardValue": zod.number().int(),
   "method": zod.enum(['secret_code', 'email_match', 'media', 'webhook']),
   "slots": zod.number().int(),
   "filledSlots": zod.number().int(),
@@ -36,6 +38,7 @@ export const ListCampaignsResponseItem = zod.object({
   "screeningQuestions": zod.array(zod.string()),
   "minTrust": zod.number().int(),
   "autoApprove": zod.boolean(),
+  "autoApproveTrust": zod.number().int(),
   "featured": zod.boolean(),
   "demo": zod.boolean(),
   "ownerId": zod.string()
@@ -49,6 +52,8 @@ export const createCampaignBodyTitleMax = 120;
 export const createCampaignBodyCompanyMin = 2;
 export const createCampaignBodyCompanyMax = 80;
 
+export const createCampaignBodyLogoUrlMax = 2048;
+
 export const createCampaignBodyDescriptionMin = 20;
 export const createCampaignBodyDescriptionMax = 5000;
 
@@ -58,6 +63,9 @@ export const createCampaignBodyTagsMax = 8;
 
 export const createCampaignBodyRewardMin = 3;
 export const createCampaignBodyRewardMax = 150;
+
+export const createCampaignBodyRewardValueMin = 0;
+export const createCampaignBodyRewardValueMax = 100000;
 
 export const createCampaignBodySlotsMax = 15;
 
@@ -72,6 +80,9 @@ export const createCampaignBodyScreeningQuestionsMax = 3;
 export const createCampaignBodyMinTrustMin = 0;
 export const createCampaignBodyMinTrustMax = 100;
 
+export const createCampaignBodyAutoApproveTrustMin = 0;
+export const createCampaignBodyAutoApproveTrustMax = 100;
+
 export const createCampaignBodySecretCodeMax = 120;
 
 export const createCampaignBodyRewardCodesItemMax = 500;
@@ -83,17 +94,20 @@ export const createCampaignBodyRewardCodesMax = 15;
 export const CreateCampaignBody = zod.object({
   "title": zod.string().min(createCampaignBodyTitleMin).max(createCampaignBodyTitleMax),
   "company": zod.string().min(createCampaignBodyCompanyMin).max(createCampaignBodyCompanyMax),
+  "logoUrl": zod.string().max(createCampaignBodyLogoUrlMax).optional(),
   "description": zod.string().min(createCampaignBodyDescriptionMin).max(createCampaignBodyDescriptionMax),
   "category": zod.enum(['DevTools', 'AI / ML', 'Web3', 'FinTech', 'Mobile']),
   "tags": zod.array(zod.string().max(createCampaignBodyTagsItemMax)).max(createCampaignBodyTagsMax),
   "reward": zod.string().min(createCampaignBodyRewardMin).max(createCampaignBodyRewardMax),
-  "method": zod.enum(['secret_code', 'email_match', 'media']),
+  "rewardValue": zod.number().int().min(createCampaignBodyRewardValueMin).max(createCampaignBodyRewardValueMax).optional(),
+  "method": zod.enum(['secret_code', 'email_match', 'media', 'webhook']),
   "slots": zod.number().int().min(1).max(createCampaignBodySlotsMax),
   "instructions": zod.string().min(createCampaignBodyInstructionsMin).max(createCampaignBodyInstructionsMax),
   "productUrl": zod.string().url(),
   "screeningQuestions": zod.array(zod.string().min(createCampaignBodyScreeningQuestionsItemMin).max(createCampaignBodyScreeningQuestionsItemMax)).min(1).max(createCampaignBodyScreeningQuestionsMax),
   "minTrust": zod.number().int().min(createCampaignBodyMinTrustMin).max(createCampaignBodyMinTrustMax),
   "autoApprove": zod.boolean(),
+  "autoApproveTrust": zod.number().int().min(createCampaignBodyAutoApproveTrustMin).max(createCampaignBodyAutoApproveTrustMax).optional(),
   "secretCode": zod.string().max(createCampaignBodySecretCodeMax).optional(),
   "rewardCodes": zod.array(zod.string().min(1).max(createCampaignBodyRewardCodesItemMax)).min(1).max(createCampaignBodyRewardCodesMax)
 })
@@ -102,10 +116,12 @@ export const CreateCampaignResponse = zod.object({
   "id": zod.number().int(),
   "title": zod.string(),
   "company": zod.string(),
+  "logoUrl": zod.string().optional(),
   "description": zod.string(),
   "category": zod.string(),
   "tags": zod.array(zod.string()),
   "reward": zod.string(),
+  "rewardValue": zod.number().int(),
   "method": zod.enum(['secret_code', 'email_match', 'media', 'webhook']),
   "slots": zod.number().int(),
   "filledSlots": zod.number().int(),
@@ -116,6 +132,7 @@ export const CreateCampaignResponse = zod.object({
   "screeningQuestions": zod.array(zod.string()),
   "minTrust": zod.number().int(),
   "autoApprove": zod.boolean(),
+  "autoApproveTrust": zod.number().int(),
   "featured": zod.boolean(),
   "demo": zod.boolean(),
   "ownerId": zod.string()
@@ -130,10 +147,12 @@ export const GetCampaignResponse = zod.object({
   "id": zod.number().int(),
   "title": zod.string(),
   "company": zod.string(),
+  "logoUrl": zod.string().optional(),
   "description": zod.string(),
   "category": zod.string(),
   "tags": zod.array(zod.string()),
   "reward": zod.string(),
+  "rewardValue": zod.number().int(),
   "method": zod.enum(['secret_code', 'email_match', 'media', 'webhook']),
   "slots": zod.number().int(),
   "filledSlots": zod.number().int(),
@@ -144,6 +163,7 @@ export const GetCampaignResponse = zod.object({
   "screeningQuestions": zod.array(zod.string()),
   "minTrust": zod.number().int(),
   "autoApprove": zod.boolean(),
+  "autoApproveTrust": zod.number().int(),
   "featured": zod.boolean(),
   "demo": zod.boolean(),
   "ownerId": zod.string()
@@ -153,6 +173,8 @@ export const GetCampaignResponse = zod.object({
 export const UpdateCampaignParams = zod.object({
   "id": zod.coerce.number().int()
 })
+
+export const updateCampaignBodyLogoUrlMax = 2048;
 
 export const updateCampaignBodyTitleMin = 3;
 export const updateCampaignBodyTitleMax = 120;
@@ -166,6 +188,7 @@ export const updateCampaignBodyInstructionsMax = 10000;
 
 
 export const UpdateCampaignBody = zod.object({
+  "logoUrl": zod.string().max(updateCampaignBodyLogoUrlMax).optional(),
   "title": zod.string().min(updateCampaignBodyTitleMin).max(updateCampaignBodyTitleMax).optional(),
   "description": zod.string().min(updateCampaignBodyDescriptionMin).max(updateCampaignBodyDescriptionMax).optional(),
   "instructions": zod.string().min(updateCampaignBodyInstructionsMin).max(updateCampaignBodyInstructionsMax).optional(),
@@ -176,10 +199,12 @@ export const UpdateCampaignResponse = zod.object({
   "id": zod.number().int(),
   "title": zod.string(),
   "company": zod.string(),
+  "logoUrl": zod.string().optional(),
   "description": zod.string(),
   "category": zod.string(),
   "tags": zod.array(zod.string()),
   "reward": zod.string(),
+  "rewardValue": zod.number().int(),
   "method": zod.enum(['secret_code', 'email_match', 'media', 'webhook']),
   "slots": zod.number().int(),
   "filledSlots": zod.number().int(),
@@ -190,6 +215,7 @@ export const UpdateCampaignResponse = zod.object({
   "screeningQuestions": zod.array(zod.string()),
   "minTrust": zod.number().int(),
   "autoApprove": zod.boolean(),
+  "autoApproveTrust": zod.number().int(),
   "featured": zod.boolean(),
   "demo": zod.boolean(),
   "ownerId": zod.string()
@@ -213,10 +239,12 @@ export const ListApplicationsResponseItem = zod.object({
   "campaignTitle": zod.string(),
   "userId": zod.string(),
   "username": zod.string(),
+  "trustScore": zod.number().int(),
   "answers": zod.array(zod.string()),
   "status": zod.enum(['pending', 'approved', 'rejected', 'submitted', 'completed', 'expired']),
   "createdAt": zod.string(),
   "deadline": zod.string().nullable(),
+  "verifiedAt": zod.string().nullable(),
   "productUrl": zod.string(),
   "method": zod.string(),
   "reward": zod.string()
@@ -242,10 +270,12 @@ export const ApplyCampaignResponse = zod.object({
   "campaignTitle": zod.string(),
   "userId": zod.string(),
   "username": zod.string(),
+  "trustScore": zod.number().int(),
   "answers": zod.array(zod.string()),
   "status": zod.enum(['pending', 'approved', 'rejected', 'submitted', 'completed', 'expired']),
   "createdAt": zod.string(),
   "deadline": zod.string().nullable(),
+  "verifiedAt": zod.string().nullable(),
   "productUrl": zod.string(),
   "method": zod.string(),
   "reward": zod.string()
@@ -271,10 +301,12 @@ export const ReviewApplicationResponse = zod.object({
   "campaignTitle": zod.string(),
   "userId": zod.string(),
   "username": zod.string(),
+  "trustScore": zod.number().int(),
   "answers": zod.array(zod.string()),
   "status": zod.enum(['pending', 'approved', 'rejected', 'submitted', 'completed', 'expired']),
   "createdAt": zod.string(),
   "deadline": zod.string().nullable(),
+  "verifiedAt": zod.string().nullable(),
   "productUrl": zod.string(),
   "method": zod.string(),
   "reward": zod.string()
@@ -288,6 +320,7 @@ export const ListSubmissionsQueryParams = zod.object({
 export const ListSubmissionsResponseItem = zod.object({
   "id": zod.number().int(),
   "applicationId": zod.number().int(),
+  "campaignId": zod.number().int(),
   "campaignTitle": zod.string(),
   "username": zod.string(),
   "title": zod.string(),
@@ -324,6 +357,7 @@ export const CreateSubmissionBody = zod.object({
 export const CreateSubmissionResponse = zod.object({
   "id": zod.number().int(),
   "applicationId": zod.number().int(),
+  "campaignId": zod.number().int(),
   "campaignTitle": zod.string(),
   "username": zod.string(),
   "title": zod.string(),
@@ -354,6 +388,7 @@ export const ReviewSubmissionBody = zod.object({
 export const ReviewSubmissionResponse = zod.object({
   "id": zod.number().int(),
   "applicationId": zod.number().int(),
+  "campaignId": zod.number().int(),
   "campaignTitle": zod.string(),
   "username": zod.string(),
   "title": zod.string(),
@@ -410,12 +445,16 @@ export const GetDashboardResponse = zod.object({
   "trustScore": zod.number().int(),
   "xp": zod.number().int(),
   "streak": zod.number().int(),
+  "maxStreak": zod.number().int(),
   "freezes": zod.number().int(),
   "badges": zod.array(zod.string()),
+  "approvedReports": zod.number().int(),
+  "videoReports": zod.number().int(),
   "contributions": zod.array(zod.object({
   "date": zod.string(),
   "count": zod.number().int()
-}))
+})),
+  "createdAt": zod.string().nullable()
 })
 })
 
@@ -429,12 +468,16 @@ export const GetProfileResponse = zod.object({
   "trustScore": zod.number().int(),
   "xp": zod.number().int(),
   "streak": zod.number().int(),
+  "maxStreak": zod.number().int(),
   "freezes": zod.number().int(),
   "badges": zod.array(zod.string()),
+  "approvedReports": zod.number().int(),
+  "videoReports": zod.number().int(),
   "contributions": zod.array(zod.object({
   "date": zod.string(),
   "count": zod.number().int()
-}))
+})),
+  "createdAt": zod.string().nullable()
 })
 
 
@@ -469,12 +512,16 @@ export const UpdateProfileResponse = zod.object({
   "trustScore": zod.number().int(),
   "xp": zod.number().int(),
   "streak": zod.number().int(),
+  "maxStreak": zod.number().int(),
   "freezes": zod.number().int(),
   "badges": zod.array(zod.string()),
+  "approvedReports": zod.number().int(),
+  "videoReports": zod.number().int(),
   "contributions": zod.array(zod.object({
   "date": zod.string(),
   "count": zod.number().int()
-}))
+})),
+  "createdAt": zod.string().nullable()
 })
 
 
@@ -492,6 +539,137 @@ export const GetStatsResponse = zod.object({
   "testers": zod.number().int(),
   "verifiedReports": zod.number().int(),
   "availableSlots": zod.number().int()
+})
+
+
+export const GetPublicProfileParams = zod.object({
+  "username": zod.coerce.string()
+})
+
+export const GetPublicProfileResponse = zod.object({
+  "username": zod.string(),
+  "bio": zod.string(),
+  "stack": zod.array(zod.string()),
+  "os": zod.string(),
+  "trustScore": zod.number().int(),
+  "xp": zod.number().int(),
+  "streak": zod.number().int(),
+  "maxStreak": zod.number().int(),
+  "freezes": zod.number().int(),
+  "badges": zod.array(zod.string()),
+  "approvedReports": zod.number().int(),
+  "videoReports": zod.number().int(),
+  "contributions": zod.array(zod.object({
+  "date": zod.string(),
+  "count": zod.number().int()
+})),
+  "createdAt": zod.string().nullable()
+})
+
+
+export const GetIntegrationsResponse = zod.object({
+  "webhookUrl": zod.string(),
+  "webhookSecret": zod.string(),
+  "githubRepo": zod.string(),
+  "lastDeliveryAt": zod.string().nullable(),
+  "lastDeliveryStatus": zod.number().int().nullable(),
+  "lastDeliveryEvent": zod.string().nullable()
+})
+
+
+export const updateIntegrationsBodyWebhookUrlMax = 2048;
+
+export const updateIntegrationsBodyGithubRepoMax = 140;
+
+
+
+export const UpdateIntegrationsBody = zod.object({
+  "webhookUrl": zod.string().max(updateIntegrationsBodyWebhookUrlMax),
+  "githubRepo": zod.string().max(updateIntegrationsBodyGithubRepoMax)
+})
+
+export const UpdateIntegrationsResponse = zod.object({
+  "webhookUrl": zod.string(),
+  "webhookSecret": zod.string(),
+  "githubRepo": zod.string(),
+  "lastDeliveryAt": zod.string().nullable(),
+  "lastDeliveryStatus": zod.number().int().nullable(),
+  "lastDeliveryEvent": zod.string().nullable()
+})
+
+
+export const TestWebhookResponse = zod.object({
+  "webhookUrl": zod.string(),
+  "webhookSecret": zod.string(),
+  "githubRepo": zod.string(),
+  "lastDeliveryAt": zod.string().nullable(),
+  "lastDeliveryStatus": zod.number().int().nullable(),
+  "lastDeliveryEvent": zod.string().nullable()
+})
+
+
+export const RotateWebhookSecretResponse = zod.object({
+  "webhookUrl": zod.string(),
+  "webhookSecret": zod.string(),
+  "githubRepo": zod.string(),
+  "lastDeliveryAt": zod.string().nullable(),
+  "lastDeliveryStatus": zod.number().int().nullable(),
+  "lastDeliveryEvent": zod.string().nullable()
+})
+
+
+export const ListApiKeysResponseItem = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "prefix": zod.string(),
+  "createdAt": zod.string(),
+  "lastUsedAt": zod.string().nullable()
+})
+export const ListApiKeysResponse = zod.array(ListApiKeysResponseItem)
+
+
+export const createApiKeyBodyNameMin = 2;
+export const createApiKeyBodyNameMax = 60;
+
+
+
+export const CreateApiKeyBody = zod.object({
+  "name": zod.string().min(createApiKeyBodyNameMin).max(createApiKeyBodyNameMax)
+})
+
+export const CreateApiKeyResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "prefix": zod.string(),
+  "createdAt": zod.string(),
+  "lastUsedAt": zod.string().nullable(),
+  "token": zod.string()
+})
+
+
+export const RevokeApiKeyParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const RevokeApiKeyResponse = zod.void()
+
+
+/**
+ * Called by a founder's backend with an API key (Authorization Bearer) when a tester finishes the target action.
+ */
+export const createVerificationBodyBetadropIdMax = 200;
+
+
+
+export const CreateVerificationBody = zod.object({
+  "campaignId": zod.number().int(),
+  "betadropId": zod.string().min(1).max(createVerificationBodyBetadropIdMax)
+})
+
+export const CreateVerificationResponse = zod.object({
+  "applicationId": zod.number().int(),
+  "status": zod.string(),
+  "verifiedAt": zod.string()
 })
 
 

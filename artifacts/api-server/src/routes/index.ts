@@ -4,6 +4,7 @@ import campaigns from "./campaigns";
 import applications from "./applications";
 import submissions from "./submissions";
 import account from "./account";
+import integrations from "./integrations";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(campaigns);
 router.use(applications);
 router.use(submissions);
 router.use(account);
+router.use(integrations);
 
 export default router;

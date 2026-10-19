@@ -217,6 +217,101 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Stats' }
+  /profiles/{username}:
+    parameters:
+      - { in: path, name: username, required: true, schema: { type: string } }
+    get:
+      operationId: getPublicProfile
+      responses:
+        '200':
+          description: Public tester profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicProfile' }
+  /integrations:
+    get:
+      operationId: getIntegrations
+      responses:
+        '200':
+          description: Founder integration settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Integrations' }
+    put:
+      operationId: updateIntegrations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IntegrationsInput' }
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Integrations' }
+  /integrations/webhook/test:
+    post:
+      operationId: testWebhook
+      responses:
+        '200':
+          description: Test delivery result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Integrations' }
+  /integrations/webhook/rotate:
+    post:
+      operationId: rotateWebhookSecret
+      responses:
+        '200':
+          description: New signing secret
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Integrations' }
+  /api-keys:
+    get:
+      operationId: listApiKeys
+      responses:
+        '200':
+          description: Keys (without secrets)
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ApiKey' } }
+    post:
+      operationId: createApiKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiKeyInput' }
+      responses:
+        '201':
+          description: Created. The token is shown once.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKeyCreated' }
+  /api-keys/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    delete:
+      operationId: revokeApiKey
+      responses:
+        '204': { description: Revoked }
+  /v1/verifications:
+    post:
+      operationId: createVerification
+      description: Called by a founder's backend with an API key (Authorization Bearer) when a tester finishes the target action.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VerificationInput' }
+      responses:
+        '200':
+          description: Verified
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Verification' }
 components:
   schemas:
     HealthStatus:
@@ -226,7 +321,7 @@ components:
         status: { type: string }
     Campaign:
       type: object
-      required: [id, title, company, description, category, tags, reward, method, slots, filledSlots, status, createdAt, instructions, productUrl, screeningQuestions, minTrust, autoApprove, featured, demo, ownerId]
+      required: [id, title, company, description, category, tags, reward, rewardValue, method, slots, filledSlots, status, createdAt, instructions, productUrl, screeningQuestions, minTrust, autoApprove, autoApproveTrust, featured, demo, ownerId]
       properties:
         id: { type: integer }
         title: { type: string }
@@ -236,6 +331,7 @@ components:
         category: { type: string }
         tags: { type: array, items: { type: string } }
         reward: { type: string }
+        rewardValue: { type: integer }
         method: { type: string, enum: [secret_code, email_match, media, webhook] }
         slots: { type: integer }
         filledSlots: { type: integer }
@@ -246,6 +342,7 @@ components:
         screeningQuestions: { type: array, items: { type: string } }
         minTrust: { type: integer }
         autoApprove: { type: boolean }
+        autoApproveTrust: { type: integer }
         featured: { type: boolean }
         demo: { type: boolean }
         ownerId: { type: string }
@@ -260,13 +357,15 @@ components:
         category: { type: string, enum: [DevTools, AI / ML, Web3, FinTech, Mobile] }
         tags: { type: array, maxItems: 8, items: { type: string, maxLength: 30 } }
         reward: { type: string, minLength: 3, maxLength: 150 }
-        method: { type: string, enum: [secret_code, email_match, media] }
+        rewardValue: { type: integer, minimum: 0, maximum: 100000 }
+        method: { type: string, enum: [secret_code, email_match, media, webhook] }
         slots: { type: integer, minimum: 1, maximum: 15 }
         instructions: { type: string, minLength: 10, maxLength: 10000 }
         productUrl: { type: string, format: uri }
         screeningQuestions: { type: array, minItems: 1, maxItems: 3, items: { type: string, minLength: 3, maxLength: 250 } }
         minTrust: { type: integer, minimum: 0, maximum: 100 }
         autoApprove: { type: boolean }
+        autoApproveTrust: { type: integer, minimum: 0, maximum: 100 }
         secretCode: { type: string, maxLength: 120 }
         rewardCodes: { type: array, minItems: 1, maxItems: 15, items: { type: string, minLength: 1, maxLength: 500 } }
     CampaignUpdate:
@@ -285,17 +384,19 @@ components:
         answers: { type: array, minItems: 1, maxItems: 3, items: { type: string, minLength: 2, maxLength: 2000 } }
     Application:
       type: object
-      required: [id, campaignId, campaignTitle, userId, username, answers, status, createdAt, deadline, productUrl, method, reward]
+      required: [id, campaignId, campaignTitle, userId, username, trustScore, answers, status, createdAt, deadline, verifiedAt, productUrl, method, reward]
       properties:
         id: { type: integer }
         campaignId: { type: integer }
         campaignTitle: { type: string }
         userId: { type: string }
         username: { type: string }
+        trustScore: { type: integer }
         answers: { type: array, items: { type: string } }
         status: { type: string, enum: [pending, approved, rejected, submitted, completed, expired] }
         createdAt: { type: string }
         deadline: { type: [string, 'null'] }
+        verifiedAt: { type: [string, 'null'] }
         productUrl: { type: string }
         method: { type: string }
         reward: { type: string }
@@ -318,10 +419,11 @@ components:
         severity: { type: string, enum: [low, medium, high, critical] }
     Submission:
       type: object
-      required: [id, applicationId, campaignTitle, username, title, content, mediaUrl, accountEmail, severity, status, reason, createdAt, reviewDeadline]
+      required: [id, applicationId, campaignId, campaignTitle, username, title, content, mediaUrl, accountEmail, severity, status, reason, createdAt, reviewDeadline]
       properties:
         id: { type: integer }
         applicationId: { type: integer }
+        campaignId: { type: integer }
         campaignTitle: { type: string }
         username: { type: string }
         title: { type: string }
@@ -353,7 +455,7 @@ components:
         os: { type: string, maxLength: 80 }
     Profile:
       type: object
-      required: [id, username, bio, stack, os, trustScore, xp, streak, freezes, badges, contributions]
+      required: [id, username, bio, stack, os, trustScore, xp, streak, maxStreak, freezes, badges, approvedReports, videoReports, contributions, createdAt]
       properties:
         id: { type: string }
         username: { type: string }
@@ -363,9 +465,31 @@ components:
         trustScore: { type: integer }
         xp: { type: integer }
         streak: { type: integer }
+        maxStreak: { type: integer }
         freezes: { type: integer }
         badges: { type: array, items: { type: string } }
+        approvedReports: { type: integer }
+        videoReports: { type: integer }
         contributions: { type: array, items: { $ref: '#/components/schemas/Contribution' } }
+        createdAt: { type: [string, 'null'] }
+    PublicProfile:
+      type: object
+      required: [username, bio, stack, os, trustScore, xp, streak, maxStreak, freezes, badges, approvedReports, videoReports, contributions, createdAt]
+      properties:
+        username: { type: string }
+        bio: { type: string }
+        stack: { type: array, items: { type: string } }
+        os: { type: string }
+        trustScore: { type: integer }
+        xp: { type: integer }
+        streak: { type: integer }
+        maxStreak: { type: integer }
+        freezes: { type: integer }
+        badges: { type: array, items: { type: string } }
+        approvedReports: { type: integer }
+        videoReports: { type: integer }
+        contributions: { type: array, items: { $ref: '#/components/schemas/Contribution' } }
+        createdAt: { type: [string, 'null'] }
     Contribution:
       type: object
       required: [date, count]
@@ -400,3 +524,56 @@ components:
         testers: { type: integer }
         verifiedReports: { type: integer }
         availableSlots: { type: integer }
+    Integrations:
+      type: object
+      required: [webhookUrl, webhookSecret, githubRepo, lastDeliveryAt, lastDeliveryStatus, lastDeliveryEvent]
+      properties:
+        webhookUrl: { type: string }
+        webhookSecret: { type: string }
+        githubRepo: { type: string }
+        lastDeliveryAt: { type: [string, 'null'] }
+        lastDeliveryStatus: { type: [integer, 'null'] }
+        lastDeliveryEvent: { type: [string, 'null'] }
+    IntegrationsInput:
+      type: object
+      required: [webhookUrl, githubRepo]
+      properties:
+        webhookUrl: { type: string, maxLength: 2048 }
+        githubRepo: { type: string, maxLength: 140 }
+    ApiKey:
+      type: object
+      required: [id, name, prefix, createdAt, lastUsedAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        prefix: { type: string }
+        createdAt: { type: string }
+        lastUsedAt: { type: [string, 'null'] }
+    ApiKeyInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 60 }
+    ApiKeyCreated:
+      type: object
+      required: [id, name, prefix, createdAt, lastUsedAt, token]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        prefix: { type: string }
+        createdAt: { type: string }
+        lastUsedAt: { type: [string, 'null'] }
+        token: { type: string }
+    VerificationInput:
+      type: object
+      required: [campaignId, betadropId]
+      properties:
+        campaignId: { type: integer }
+        betadropId: { type: string, minLength: 1, maxLength: 200 }
+    Verification:
+      type: object
+      required: [applicationId, status, verifiedAt]
+      properties:
+        applicationId: { type: integer }
+        status: { type: string }
+        verifiedAt: { type: string }
