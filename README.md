@@ -2,6 +2,40 @@
 
 A beta-testing marketplace for software. Founders publish test campaigns, technical testers apply, run the scenario and send reports, and every accepted report pays out a reward code (a license, a subscription, API credits). The interface is in English, Russian and Azerbaijani.
 
+## Screenshots
+
+**Landing page**
+
+| Hero | Verification methods |
+| --- | --- |
+| ![Landing hero](docs/screenshots/landing-hero.jpg) | ![Verification slab](docs/screenshots/landing-verification.jpg) |
+
+| Features | Live catalog |
+| --- | --- |
+| ![Feature bento](docs/screenshots/landing-bento.jpg) | ![Live catalog band](docs/screenshots/landing-live-catalog.jpg) |
+
+**Testers**
+
+| Catalog | Campaign page |
+| --- | --- |
+| ![Catalog](docs/screenshots/catalog.jpg) | ![Campaign](docs/screenshots/campaign.jpg) |
+
+| My tests | Public profile (dark theme) |
+| --- | --- |
+| ![Tester dashboard](docs/screenshots/tester-dashboard.jpg) | ![Tester profile](docs/screenshots/tester-profile-dark.jpg) |
+
+**Founders**
+
+| Inbox | New campaign |
+| --- | --- |
+| ![Founder inbox](docs/screenshots/founder-inbox.jpg) | ![New campaign](docs/screenshots/founder-new-campaign.jpg) |
+
+| Integrations | Mobile |
+| --- | --- |
+| ![Integrations](docs/screenshots/founder-integrations.jpg) | <img src="docs/screenshots/mobile-landing.jpg" alt="Mobile landing" width="260" /> |
+
+The screenshots use local demo data. Names, campaigns and reports in them are made up.
+
 ## Tech stack
 
 <p>
